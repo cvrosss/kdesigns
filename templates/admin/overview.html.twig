@@ -1,0 +1,85 @@
+{% extends 'base.html.twig' %}
+
+{% set active_nav = 'overview' %}
+{% set page_overline = 'Overview' %}
+{% set page_title = 'Dashboard Overview' %}
+
+{% block title %}Dashboard Overview · KDesigns Admin{% endblock %}
+
+{% block body %}
+    <div class="kpis kpis--5">
+        <div class="kpi kpi--burgundy kpi--lg">
+            <span class="kpi__label">Total Revenue</span>
+            <span class="kpi__value">₱{{ stats.revenue|number_format }}</span>
+            <span class="kpi__note">Excl. cancelled</span>
+        </div>
+        <div class="kpi kpi--green">
+            <span class="kpi__label">Total Orders</span>
+            <span class="kpi__value">{{ stats.total_orders }}</span>
+            <span class="kpi__note">{{ stats.pending_orders }} pending</span>
+        </div>
+        <div class="kpi kpi--pink">
+            <span class="kpi__label">Low Stock</span>
+            <span class="kpi__value">{{ stats.low_stock }}</span>
+            <span class="kpi__note">Need restocking</span>
+        </div>
+        <div class="kpi kpi--blue">
+            <span class="kpi__label">Active Products</span>
+            <span class="kpi__value">{{ stats.active_products }}</span>
+            <span class="kpi__note">of {{ stats.total_products }} total</span>
+        </div>
+        <div class="kpi kpi--brown">
+            <span class="kpi__label">Total Buyers</span>
+            <span class="kpi__value">{{ stats.total_buyers }}</span>
+            <span class="kpi__note">Unique customers</span>
+        </div>
+    </div>
+
+    <div class="panels">
+        <section class="panel">
+            <header class="panel__head">
+                <h2>Recent Orders</h2>
+                <a href="{{ path('app_orders') }}">View all →</a>
+            </header>
+            {% for order in recent_orders %}
+                <div class="panel__row">
+                    <div>
+                        <div class="row-title">{{ order.customer }}</div>
+                        <div class="mono">{{ order.id }}</div>
+                    </div>
+                    <div class="row-end">
+                        <div class="cell-price">₱{{ order.total|number_format }}</div>
+                        <span class="status status--{{ order.status }}">{{ order.status|capitalize }}</span>
+                    </div>
+                </div>
+            {% else %}
+                <p class="empty-state">No orders yet.</p>
+            {% endfor %}
+        </section>
+
+        <section class="panel">
+            <header class="panel__head">
+                <h2>Stock Alerts</h2>
+                <a href="{{ path('app_inventory') }}">Manage →</a>
+            </header>
+            {% for product in stock_alerts %}
+                <div class="panel__row panel__row--center">
+                    <div class="product">
+                        <div class="product__thumb product__thumb--sm" aria-hidden="true"></div>
+                        <div>
+                            <div class="row-title">{{ product.name }}</div>
+                            <div class="cell-category cell-category--sm">{{ product.category }}</div>
+                        </div>
+                    </div>
+                    {% if product.stock <= 0 %}
+                        <span class="status status--out">Out</span>
+                    {% else %}
+                        <span class="status status--low">{{ product.stock }} left</span>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p class="empty-state">No stock alerts.</p>
+            {% endfor %}
+        </section>
+    </div>
+{% endblock %}

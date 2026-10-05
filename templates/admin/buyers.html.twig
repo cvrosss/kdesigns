@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% set active_nav = 'buyers' %}
+{% set page_overline = 'Buyers History' %}
+{% set page_title = 'Buyers History' %}
+
+{% block title %}Buyers History · KDesigns Admin{% endblock %}
+
+{% block body %}
+    <div class="kpis kpis--3">
+        <div class="kpi kpi--burgundy kpi--compact">
+            <span class="kpi__label">Total Buyers</span>
+            <span class="kpi__value">{{ stats.total_buyers }}</span>
+        </div>
+        <div class="kpi kpi--green kpi--compact">
+            <span class="kpi__label">Total Revenue</span>
+            <span class="kpi__value">₱{{ stats.revenue|number_format }}</span>
+        </div>
+        <div class="kpi kpi--blue kpi--compact">
+            <span class="kpi__label">Avg. Order Value</span>
+            <span class="kpi__value">₱{{ stats.average_order_value|number_format }}</span>
+        </div>
+    </div>
+
+    <div class="table-card table-card--full">
+        <h2 class="table-card__title">All Customers — sorted by total spend</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Customer</th>
+                    <th>Email</th>
+                    <th>Orders</th>
+                    <th>Items Purchased</th>
+                    <th>Total Spent</th>
+                    <th>Last Order</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for buyer in buyers %}
+                    <tr>
+                        <td class="cell-rank">{% if loop.first %}<span class="star">★</span>{% else %}{{ loop.index }}{% endif %}</td>
+                        <td>
+                            <div class="customer">
+                                <span class="avatar">{{ buyer.name|first|upper }}</span>
+                                <span class="row-title row-title--lg">{{ buyer.name }}</span>
+                            </div>
+                        </td>
+                        <td class="cell-muted">{{ buyer.email }}</td>
+                        <td class="cell-stock cell-stock--sm">{{ buyer.order_count }}</td>
+                        <td class="cell-items cell-items--sm">{% for item in buyer.items %}<div>{{ item }}</div>{% endfor %}</td>
+                        <td class="cell-price">₱{{ buyer.total_spent|number_format }}</td>
+                        <td class="cell-muted">{{ buyer.last_order_date }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="7" class="empty-state">No buyers yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

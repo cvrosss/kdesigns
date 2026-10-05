@@ -1,0 +1,31 @@
+{% set nav = [
+    {key: 'overview', label: 'Overview', icon: '◈', route: 'app_overview'},
+    {key: 'orders', label: 'Orders', icon: '🧾', route: 'app_orders'},
+    {key: 'inventory', label: 'Inventory', icon: '📦', route: 'app_inventory'},
+    {key: 'buyers', label: 'Buyers History', icon: '👥', route: 'app_buyers_history'},
+] %}
+
+<aside class="sidebar">
+    <div class="sidebar__brand">
+        <span class="sidebar__eyebrow">Admin Panel</span>
+        <span class="sidebar__logo">KDesigns</span>
+        <span class="sidebar__tagline">Blooms &amp; Styles</span>
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Admin navigation">
+        {% for item in nav %}
+            {% set badge = nav_badges[item.key]|default(0) %}
+            <a href="{{ path(item.route) }}"
+               class="sidebar__link{{ item.key == active ? ' is-active' : '' }}"
+               {% if item.key == active %}aria-current="page"{% endif %}>
+                <span class="sidebar__icon" aria-hidden="true">{{ item.icon }}</span>
+                <span class="sidebar__label">{{ item.label }}</span>
+                {% if badge > 0 %}<span class="sidebar__badge">{{ badge }}</span>{% endif %}
+            </a>
+        {% endfor %}
+    </nav>
+
+    <div class="sidebar__footer">
+        <a href="{{ path('app_home') }}" class="sidebar__back">← Back to Site</a>
+    </div>
+</aside>

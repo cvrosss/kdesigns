@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% set active_nav = 'orders' %}
+{% set page_overline = 'Orders' %}
+{% set page_title = 'Order Management' %}
+
+{% block title %}Order Management · KDesigns Admin{% endblock %}
+
+{% block body %}
+    <div class="filters">
+        <div class="filters__group">
+            <button type="button" class="btn-filter is-active">All ({{ total_orders }})</button>
+            {% for status in statuses %}
+                <button type="button" class="btn-filter">{{ status|capitalize }} ({{ status_counts[status]|default(0) }})</button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="table-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Email</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Update Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                    <tr>
+                        <td class="mono mono--strong">{{ order.id }}</td>
+                        <td class="row-title row-title--lg">{{ order.customer }}</td>
+                        <td class="cell-muted">{{ order.email }}</td>
+                        <td class="cell-items">{% for item in order.items %}<div>{{ item }}</div>{% endfor %}</td>
+                        <td class="cell-price">₱{{ order.total|number_format }}</td>
+                        <td><span class="status status--{{ order.status }}">{{ order.status|capitalize }}</span></td>
+                        <td>
+                            <form method="post" action="#" class="restock">
+                                <select name="status" class="select" aria-label="Update status for {{ order.id }}">
+                                    {% for s in statuses %}
+                                        <option value="{{ s }}"{{ s == order.status ? ' selected' : '' }}>{{ s|capitalize }}</option>
+                                    {% endfor %}
+                                </select>
+                            </form>
+                        </td>
+                        <td class="cell-muted">{{ order.date }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="8" class="empty-state">No orders found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

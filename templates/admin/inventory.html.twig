@@ -1,0 +1,69 @@
+{% extends 'base.html.twig' %}
+
+{% set active_nav = 'inventory' %}
+{% set page_overline = 'Inventory' %}
+{% set page_title = 'Inventory System' %}
+
+{% block title %}Inventory System · KDesigns Admin{% endblock %}
+
+{% block body %}
+    <div class="filters">
+        <div class="filters__group">
+            <button type="button" class="btn-filter is-active">All Products</button>
+            <button type="button" class="btn-filter">Low Stock</button>
+            <button type="button" class="btn-filter">Out of Stock</button>
+        </div>
+        <span class="filters__count">{{ total_products }} products</span>
+    </div>
+
+    <div class="table-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Current Stock</th>
+                    <th>Status</th>
+                    <th>Restock Qty</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in products %}
+                    {% set level = row.stock <= 0 ? 'out' : (row.stock <= low_stock_threshold ? 'low' : 'ok') %}
+                    <tr>
+                        <td>
+                            <div class="product">
+                                <div class="product__thumb" aria-hidden="true"></div>
+                                <div>
+                                    <div class="product__name">{{ row.name }}</div>
+                                    {% if row.tag %}<span class="product__tag">{{ row.tag }}</span>{% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="cell-category">{{ row.category }}</td>
+                        <td class="cell-price">₱{{ row.price|number_format }}</td>
+                        <td class="cell-stock cell-stock--{{ level }}">{{ row.stock }}</td>
+                        <td>
+                            {% if level == 'out' %}
+                                <span class="status status--out">Out of stock</span>
+                            {% elseif level == 'low' %}
+                                <span class="status status--low">Only {{ row.stock }} left</span>
+                            {% else %}
+                                <span class="status status--ok">{{ row.stock }} in stock</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form class="restock" method="post" action="#">
+                                <input type="number" min="0" name="qty" value="{{ row.stock }}" aria-label="Restock quantity for {{ row.name }}">
+                                <button type="submit" class="btn-save">Save</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="empty-state">No products found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
