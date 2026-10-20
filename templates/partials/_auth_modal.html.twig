@@ -1,0 +1,39 @@
+<dialog class="auth" data-auth aria-labelledby="auth-title">
+    <header class="auth__head">
+        <p class="auth__eyebrow">{{ studio.full_name|upper }}</p>
+        <h2 class="auth__title" id="auth-title" data-auth-title>Welcome back</h2>
+        <button type="button" class="auth__close" data-auth-close aria-label="Close">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </header>
+
+    <div class="auth__tabs" role="tablist">
+        <button type="button" class="auth__tab is-active" role="tab" id="auth-tab-login" aria-controls="auth-panel-login" aria-selected="true" data-auth-tab="login" data-title="Welcome back">Log In</button>
+        <button type="button" class="auth__tab" role="tab" id="auth-tab-signup" aria-controls="auth-panel-signup" aria-selected="false" data-auth-tab="signup" data-title="Create an account">Sign Up</button>
+    </div>
+
+    <form class="auth__panel" id="auth-panel-login" role="tabpanel" aria-labelledby="auth-tab-login" data-auth-panel="login" novalidate>
+        <label for="login-email">Email address</label>
+        <input type="email" id="login-email" name="email" placeholder="hello@you.com" autocomplete="email" required>
+
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" name="password" placeholder="Your password" autocomplete="current-password" required>
+
+        <p class="auth__message" role="status" data-auth-message hidden></p>
+        <button type="submit" class="btn btn--primary btn--block">Log In</button>
+    </form>
+
+    <form class="auth__panel" id="auth-panel-signup" role="tabpanel" aria-labelledby="auth-tab-signup" data-auth-panel="signup" novalidate hidden>
+        <label for="signup-name">Full name</label>
+        <input type="text" id="signup-name" name="name" placeholder="Your name" autocomplete="name" required>
+
+        <label for="signup-email">Email address</label>
+        <input type="email" id="signup-email" name="email" placeholder="hello@you.com" autocomplete="email" required>
+
+        <label for="signup-password">Password</label>
+        <input type="password" id="signup-password" name="password" placeholder="Min. 6 characters" autocomplete="new-password" minlength="6" required>
+
+        <p class="auth__message" role="status" data-auth-message hidden></p>
+        <button type="submit" class="btn btn--primary btn--block">Create Account</button>
+    </form>
+</dialog>
