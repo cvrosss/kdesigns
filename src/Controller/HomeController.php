@@ -25,19 +25,6 @@ final class HomeController extends AbstractController
     public function index(): Response
     {
         return $this->render('home/index.html.twig', [
-            'story' => [
-                'years' => 3,
-                'paragraphs' => [
-                    'KDesigns Blooms & Styles is a premier floral design studio rooted in the belief that every individual bloom carries its own distinct meaning. We craft immersive botanical experiences by celebrating the raw beauty of seasonal stems, prioritizing organic textures, and allowing the natural architecture of the flowers to guide our intentional designs.',
-                    "Founded by Claire Ann Ross with a deep reverence for nature's palette, each arrangement is a considered composition — never forced, always in conversation with the light, the space, and the people within it.",
-                ],
-                'stats' => [
-                    ['value' => '98%', 'label' => 'Client Satisfaction'],
-                    ['value' => '10', 'label' => 'Workshops Attended'],
-                ],
-                'image_main' => 'images/story-main.jpg',
-                'image_secondary' => 'images/story-secondary.jpg',
-            ],
             'products' => $this->catalog->findAll(),
             'categories' => $this->catalog->getCategories(),
             'active_category' => null,

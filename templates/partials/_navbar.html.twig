@@ -1,21 +1,20 @@
 <header class="navbar{{ transparent ? ' navbar--transparent' : '' }}" data-navbar>
     <div class="container navbar__inner">
         <a href="{{ path('app_home') }}" class="navbar__brand" aria-label="{{ studio.full_name }}">
-            <span class="navbar__logo">{{ studio.name|upper }}</span>
-            <span class="navbar__sub">Blooms and style</span>
+            <img src="/images/logo.png" alt="{{ studio.name|upper }} Blooms and style" class="navbar__logo" width="384" height="151">
         </a>
 
         <nav class="navbar__links" aria-label="Primary">
             <a href="{{ path('app_home') }}">Home</a>
-            <a href="{{ path('app_home', {_fragment: 'about'}) }}">About</a>
+            <a href="{{ path('app_about') }}">About</a>
             <a href="{{ path('app_catalog') }}">Catalog</a>
         </nav>
 
         <div class="navbar__actions">
             <a href="#" class="btn btn--outline btn--sm">Log In</a>
-            <a href="#" class="btn btn--primary btn--sm" aria-label="Cart, {{ cart_count }} items">
+            <a href="#" class="btn btn--primary btn--sm" data-cart-link aria-label="Cart, 0 items">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
-                Cart{% if cart_count > 0 %} ({{ cart_count }}){% endif %}
+                Cart<span data-cart-count></span>
             </a>
         </div>
     </div>

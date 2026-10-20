@@ -1,0 +1,7 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Our Story · {{ studio.full_name }}{% endblock %}
+
+{% block body %}
+    {{ include('home/_story.html.twig', {page: true}) }}
+{% endblock %}

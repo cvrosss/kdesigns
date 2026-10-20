@@ -15,6 +15,19 @@ final class StorefrontExtension extends AbstractExtension implements GlobalsInte
         return [
             // Replace with the real cart count once a cart exists.
             'cart_count' => 0,
+            'story' => [
+                'years' => 3,
+                'paragraphs' => [
+                    'KDesigns Blooms & Styles is a premier floral design studio rooted in the belief that every individual bloom carries its own distinct meaning. We craft immersive botanical experiences by celebrating the raw beauty of seasonal stems, prioritizing organic textures, and allowing the natural architecture of the flowers to guide our intentional designs.',
+                    "Founded by Claire Ann Ross with a deep reverence for nature's palette, each arrangement is a considered composition — never forced, always in conversation with the light, the space, and the people within it.",
+                ],
+                'stats' => [
+                    ['value' => '98%', 'label' => 'Client Satisfaction'],
+                    ['value' => '10', 'label' => 'Workshops Attended'],
+                ],
+                'image_main' => 'images/story-main.jpg',
+                'image_secondary' => 'images/story-secondary.jpg',
+            ],
             'studio' => [
                 'name' => 'KDesigns',
                 'full_name' => 'KDesigns Blooms & Styles',
@@ -30,9 +43,9 @@ final class StorefrontExtension extends AbstractExtension implements GlobalsInte
                     ['label' => 'TikTok', 'url' => '#'],
                 ],
                 'studio_links' => [
-                    ['label' => 'About Us', 'route' => 'app_home', 'fragment' => 'about'],
-                    ['label' => 'Our Process', 'route' => 'app_home', 'fragment' => 'about'],
-                    ['label' => 'Sustainability', 'route' => 'app_home', 'fragment' => 'about'],
+                    ['label' => 'About Us', 'route' => 'app_about', 'fragment' => null],
+                    ['label' => 'Our Process', 'route' => 'app_about', 'fragment' => null],
+                    ['label' => 'Sustainability', 'route' => 'app_about', 'fragment' => null],
                 ],
                 'services' => ['Fresh and Dried Bouquets', 'Korean Baskets', 'Bloom Box'],
                 'contact' => [
