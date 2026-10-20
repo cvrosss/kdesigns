@@ -30,7 +30,7 @@
                     <div class="product-card__foot">
                         <span class="price">₱{{ product.price|number_format }}</span>
                         {% if product.isAvailable %}
-                            <button type="button" class="btn btn--primary btn--sm" data-product-id="{{ product.id }}">Add to Cart</button>
+                            <button type="button" class="btn btn--primary btn--sm" data-add-to-cart data-product-id="{{ product.id }}" data-product-name="{{ product.name }}">Add to Cart</button>
                         {% else %}
                             <button type="button" class="btn btn--disabled btn--sm" disabled>Sold Out</button>
                         {% endif %}
