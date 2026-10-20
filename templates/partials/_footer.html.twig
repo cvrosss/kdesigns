@@ -1,0 +1,47 @@
+<footer class="footer">
+    <div class="container">
+        <div class="footer__grid">
+            <div class="footer__brand">
+                <div class="footer__logo">{{ studio.name|upper }}</div>
+                <p>{{ studio.description }}</p>
+                <div class="footer__social">
+                    {% for link in studio.social %}
+                        <a href="{{ link.url }}">{{ link.label }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div>
+                <h3 class="footer__heading">Studio</h3>
+                <ul>
+                    {% for link in studio.studio_links %}
+                        <li><a href="{{ path(link.route, {_fragment: link.fragment}) }}">{{ link.label }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="footer__heading">Services</h3>
+                <ul>
+                    {% for service in studio.services %}
+                        <li><a href="{{ path('app_catalog') }}">{{ service }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="footer__heading">Contact</h3>
+                <ul>
+                    <li><a href="mailto:{{ studio.contact.email }}">{{ studio.contact.email }}</a></li>
+                    <li><a href="tel:{{ studio.contact.phone|replace({' ': ''}) }}">{{ studio.contact.phone }}</a></li>
+                    <li>{{ studio.contact.city }}</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer__bottom">
+            <span>&copy; {{ 'now'|date('Y') }} {{ studio.full_name }}. All rights reserved.</span>
+            <span class="footer__tagline">{{ studio.tagline }}</span>
+        </div>
+    </div>
+</footer>

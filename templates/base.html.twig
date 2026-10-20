@@ -3,41 +3,27 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{% block title %}KDesigns Admin{% endblock %}</title>
+        <title>{% block title %}{{ studio.full_name }}{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🌸</text></svg>">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&display=swap" rel="stylesheet">
         {% block stylesheets %}
-            <link rel="stylesheet" href="/css/admin.css">
+            <link rel="stylesheet" href="/css/storefront.css">
         {% endblock %}
-
-        {% block javascripts %}
-        {% endblock %}
-
-        {% set frankenphp_hot_reload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
-        {% if frankenphp_hot_reload %}
-        <meta name="frankenphp-hot-reload:url" content="{{ frankenphp_hot_reload }}">
-        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
-        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
-        {% endif %}
     </head>
     <body>
-        <div class="admin-shell">
-            {{ include('admin/_sidebar.html.twig', {active: active_nav|default('')}) }}
+        {% set navbar_transparent = navbar_transparent|default(false) %}
+        {{ include('partials/_navbar.html.twig', {transparent: navbar_transparent}) }}
 
-            <div class="admin-main">
-                {{ include('admin/_header.html.twig', {
-                    overline: page_overline|default(''),
-                    title: page_title|default('')
-                }) }}
+        <main class="site-main{{ navbar_transparent ? '' : ' site-main--offset' }}">
+            {% block body %}{% endblock %}
+        </main>
 
-                <main class="admin-content">
-                    {% block body %}{% endblock %}
-                </main>
+        {{ include('partials/_footer.html.twig') }}
 
-                {{ include('admin/_footer.html.twig') }}
-            </div>
-        </div>
+        {% block javascripts %}
+            <script src="/js/storefront.js" defer></script>
+        {% endblock %}
     </body>
 </html>

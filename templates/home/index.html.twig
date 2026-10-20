@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% set navbar_transparent = true %}
+
+{% block title %}{{ studio.full_name }} · Premier Floral Studio{% endblock %}
+
+{% block body %}
+    {{ include('home/_hero.html.twig') }}
+    {{ include('home/_story.html.twig') }}
+
+    <section class="section section--catalog" id="catalog">
+        {{ include('home/_catalog_grid.html.twig') }}
+    </section>
+
+    <section class="section section--burgundy" id="reviews">
+        {{ include('home/_testimonials.html.twig') }}
+        {{ include('home/_feedback_form.html.twig') }}
+    </section>
+{% endblock %}

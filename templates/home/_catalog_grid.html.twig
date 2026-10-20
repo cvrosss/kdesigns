@@ -1,0 +1,44 @@
+<div class="container">
+    <div class="catalog__head">
+        <div>
+            <p class="eyebrow eyebrow--rose">What We Create</p>
+            <h2 class="heading heading--lg">Flowers Catalog</h2>
+        </div>
+
+        <nav class="pills" aria-label="Filter by category">
+            <a href="{{ path('app_catalog') }}" class="pill{{ active_category is null ? ' is-active' : '' }}">All</a>
+            {% for slug, label in categories %}
+                <a href="{{ path('app_catalog', {category: slug}) }}" class="pill{{ active_category == slug ? ' is-active' : '' }}">{{ label }}</a>
+            {% endfor %}
+        </nav>
+    </div>
+
+    <div class="product-grid">
+        {% for product in products %}
+            <article class="product-card">
+                <div class="product-card__media">
+                    {% if product.badge %}
+                        <span class="badge badge--{{ product.badge|lower }}">{{ product.badge }}</span>
+                    {% endif %}
+                    <img src="/{{ product.image }}" alt="{{ product.name }}" loading="lazy" onerror="this.hidden=true">
+                </div>
+                <div class="product-card__body">
+                    <p class="product-card__category">{{ product.category }}</p>
+                    <h3 class="product-card__name">{{ product.name }}</h3>
+                    <p class="product-card__desc">{{ product.description }}</p>
+                    <span class="stock stock--{{ product.stockLevel }}">{{ product.stockStatus }}</span>
+                    <div class="product-card__foot">
+                        <span class="price">₱{{ product.price|number_format }}</span>
+                        {% if product.isAvailable %}
+                            <button type="button" class="btn btn--primary btn--sm" data-product-id="{{ product.id }}">Add to Cart</button>
+                        {% else %}
+                            <button type="button" class="btn btn--disabled btn--sm" disabled>Sold Out</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+        {% else %}
+            <p class="empty">No products available.</p>
+        {% endfor %}
+    </div>
+</div>

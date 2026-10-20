@@ -1,0 +1,9 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Flowers Catalog · {{ studio.full_name }}{% endblock %}
+
+{% block body %}
+    <section class="section section--catalog section--catalog-page">
+        {{ include('home/_catalog_grid.html.twig') }}
+    </section>
+{% endblock %}

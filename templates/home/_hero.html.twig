@@ -1,0 +1,20 @@
+<section class="hero">
+    <div class="hero__bg" style="background-image: url('/images/hero.jpg')" aria-hidden="true"></div>
+    <div class="container hero__content">
+        <p class="eyebrow eyebrow--light">Premier Floral Studio</p>
+        <h1 class="hero__title">
+            Turning flowers<br>
+            <em>into timeless</em><br>
+            memories.
+        </h1>
+        <ul class="hero__hours">
+            {% for line in studio.hours %}
+                <li>{{ line }}</li>
+            {% endfor %}
+        </ul>
+        <div class="hero__cta">
+            <a href="{{ path('app_catalog') }}" class="btn btn--rose">Shop Our Blooms</a>
+            <a href="#about" class="btn btn--ghost">Our Story</a>
+        </div>
+    </div>
+</section>

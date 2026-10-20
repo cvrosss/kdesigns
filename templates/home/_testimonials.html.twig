@@ -1,0 +1,24 @@
+<div class="container">
+    <div class="section__head section__head--center">
+        <p class="eyebrow eyebrow--rose-light">Kind Words</p>
+        <h2 class="heading heading--lg heading--light">What Our Clients Say</h2>
+    </div>
+
+    <div class="testimonial-grid">
+        {% for testimonial in testimonials %}
+            <figure class="testimonial">
+                <span class="testimonial__mark" aria-hidden="true">&ldquo;</span>
+                <blockquote>{{ testimonial.quote }}</blockquote>
+                <figcaption>
+                    <span class="avatar">{{ testimonial.initial }}</span>
+                    <span>
+                        <strong>{{ testimonial.author }}</strong>
+                        <small>{{ testimonial.year }}</small>
+                    </span>
+                </figcaption>
+            </figure>
+        {% else %}
+            <p class="empty empty--light">No reviews yet.</p>
+        {% endfor %}
+    </div>
+</div>
