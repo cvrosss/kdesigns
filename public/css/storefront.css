@@ -247,6 +247,9 @@ ul { list-style: none; margin: 0; padding: 0; }
 .alert--success { background: rgba(30, 138, 104, .25); }
 .alert--error { background: rgba(180, 35, 24, .3); }
 
+.navbar__user { font-size: 13px; font-weight: 500; color: var(--muted); }
+.navbar--transparent:not(.is-scrolled) .navbar__user { color: #fff; }
+
 /* ---------- Auth modal ---------- */
 body:has(dialog[open]) { overflow: hidden; }
 .auth {
