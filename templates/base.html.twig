@@ -12,7 +12,7 @@
             <link rel="stylesheet" href="/css/storefront.css">
         {% endblock %}
     </head>
-    <body>
+    <body{{ app.user ? ' data-authenticated' : '' }}>
         {% set navbar_transparent = navbar_transparent|default(false) %}
         {{ include('partials/_navbar.html.twig', {transparent: navbar_transparent}) }}
 
@@ -22,6 +22,27 @@
 
         {{ include('partials/_footer.html.twig') }}
         {{ include('partials/_auth_modal.html.twig') }}
+        {{ include('partials/_order_modal.html.twig') }}
+        {{ include('partials/_cart_drawer.html.twig') }}
+
+        {# Utility classes are used by the order modal only; preflight is off so the storefront's own styles are untouched. #}
+        <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+        <script>
+            tailwind.config = {
+                corePlugins: { preflight: false },
+                theme: {
+                    extend: {
+                        colors: {
+                            ink: '#1a1a1a', muted: '#6f655b', surface: '#faf6f0', 'cream-dark': '#ede5d8',
+                            burgundy: { DEFAULT: '#5c0f12', dark: '#4a0c0f' },
+                            rose: { DEFAULT: '#c46d7a', dark: '#b85b69' },
+                            red: '#b42318'
+                        },
+                        fontFamily: { serif: ['Playfair Display', 'Georgia', 'serif'], sans: ['Inter', 'system-ui', 'sans-serif'] }
+                    }
+                }
+            };
+        </script>
 
         {% block javascripts %}
             <script src="/js/storefront.js" defer></script>

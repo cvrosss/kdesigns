@@ -1,0 +1,52 @@
+{% set field_label = 'mb-2.5 block text-[11px] font-medium uppercase tracking-[.12em] text-[#6b5a4c]' %}
+{% set field_input = 'block h-[46px] w-full rounded-[3px] border border-[#ddd0bd] bg-[#f3ece0] px-4 font-sans text-[15px] text-ink placeholder:text-[#9a8f82] focus:bg-white focus:outline focus:outline-2 focus:outline-offset-1 focus:outline-burgundy aria-[invalid=true]:border-red' %}
+{% set method_btn = 'flex-1 cursor-pointer rounded-[3px] border border-[#ddd0bd] bg-surface px-4 py-[14px] font-sans text-[13px] font-semibold text-ink transition-colors hover:border-burgundy aria-pressed:border-burgundy aria-pressed:bg-burgundy aria-pressed:text-white' %}
+
+<dialog class="m-auto max-h-[calc(100vh-32px)] w-[min(440px,calc(100vw-32px))] overflow-auto rounded-md border-0 bg-surface p-0 text-ink shadow-[0_24px_64px_rgba(30,10,12,.35)] backdrop:bg-[rgba(30,14,16,.55)] backdrop:backdrop-blur-[2px]"
+        data-order aria-labelledby="order-product">
+    <header class="relative bg-burgundy px-8 pb-6 pt-7 text-white">
+        <p class="m-0 mb-2.5 text-[11px] font-semibold uppercase tracking-[.2em] text-white/50">Place Order</p>
+        <h2 class="m-0 font-serif text-2xl font-bold leading-tight" id="order-product" data-order-product></h2>
+        <p class="m-0 mt-1.5 font-serif text-lg text-rose" data-order-price></p>
+        <button type="button" class="absolute right-3 top-3 grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-white/70 hover:bg-white/10 hover:text-white" data-order-close aria-label="Close">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </header>
+
+    <form class="px-8 pb-8 pt-7" data-order-form novalidate>
+        <label class="{{ field_label }}" for="order-name">Name <span class="text-rose-dark">*</span></label>
+        <input class="{{ field_input }} mb-5" type="text" id="order-name" name="name" autocomplete="name" required>
+
+        <label class="{{ field_label }}" for="order-contact">Contact No. <span class="text-rose-dark">*</span></label>
+        <input class="{{ field_input }} mb-5" type="tel" id="order-contact" name="contact" placeholder="+63 9XX XXX XXXX" autocomplete="tel" inputmode="tel" required>
+
+        <label class="{{ field_label }}" for="order-date">Date Needed <span class="text-rose-dark">*</span></label>
+        <input class="{{ field_input }} mb-5" type="date" id="order-date" name="date" required data-order-date>
+
+        <label class="{{ field_label }}" for="order-time">Time Needed</label>
+        <select class="{{ field_input }} cursor-pointer" id="order-time" name="time">
+            {% for i in 0..16 %}
+                {% set minutes = 600 + i * 30 %}
+                {% set hour = minutes // 60 %}
+                <option value="{{ '%02d:%02d'|format(hour, minutes % 60) }}">{{ '%d:%02d %s'|format(hour > 12 ? hour - 12 : hour, minutes % 60, hour >= 12 ? 'PM' : 'AM') }}</option>
+            {% endfor %}
+        </select>
+        <p class="mb-5 mt-2 text-xs text-muted">We are open 10:00 AM – 6:00 PM, Mon–Sat. Pre-orders only on Sundays.</p>
+
+        <span class="{{ field_label }}" id="order-method-label">Fulfillment Method</span>
+        <div class="flex gap-3" role="group" aria-labelledby="order-method-label">
+            <button type="button" class="{{ method_btn }}" data-order-method="Pick Up" aria-pressed="true">🏪 Pick Up</button>
+            <button type="button" class="{{ method_btn }}" data-order-method="Delivery" aria-pressed="false">🚚 Delivery</button>
+        </div>
+        <p class="mb-0 mt-3 rounded-[3px] bg-cream-dark px-4 py-3 text-[13px] leading-normal text-muted" data-order-delivery-note hidden>
+            Delivery fees apply based on location. Our team will contact you to confirm.
+        </p>
+
+        <p class="mb-0 mt-4 rounded-[3px] bg-[#fbeceb] px-3 py-2.5 text-[13px] leading-normal text-red" role="alert" data-order-error hidden></p>
+
+        <div class="mt-5 flex gap-3">
+            <button type="button" class="flex-1 cursor-pointer rounded-[3px] border border-[#ddd0bd] bg-surface px-6 py-[15px] font-sans text-[13px] font-bold uppercase tracking-[.08em] text-burgundy hover:border-burgundy" data-order-close>Cancel</button>
+            <button type="submit" class="flex-[1.4] cursor-pointer rounded-[3px] border border-burgundy bg-burgundy px-6 py-[15px] font-sans text-[13px] font-bold uppercase tracking-[.08em] text-white hover:bg-burgundy-dark">Confirm Order</button>
+        </div>
+    </form>
+</dialog>

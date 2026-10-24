@@ -1,0 +1,25 @@
+<dialog class="m-0 ml-auto h-screen max-h-screen w-[min(420px,100vw)] overflow-hidden border-0 bg-surface p-0 text-ink shadow-[-24px_0_64px_rgba(30,10,12,.25)] backdrop:bg-[rgba(30,14,16,.55)] backdrop:backdrop-blur-[2px] open:flex open:flex-col"
+        data-cart aria-labelledby="cart-title">
+    <header class="flex items-center justify-between border-b border-[#e3d9cb] px-7 py-6">
+        <h2 class="m-0 font-serif text-2xl font-bold" id="cart-title">Your Cart</h2>
+        <button type="button" class="grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-[#6b5a4c] hover:bg-black/5 hover:text-ink" data-cart-close aria-label="Close cart">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </header>
+
+    <div class="flex flex-1 flex-col items-center px-7 pt-16 text-center" data-cart-empty>
+        <div class="text-5xl" aria-hidden="true">🌸</div>
+        <p class="m-0 mt-5 font-serif text-lg">Your cart is empty</p>
+        <p class="m-0 mt-2 text-sm text-muted">Add some beautiful blooms!</p>
+    </div>
+
+    <ul class="m-0 flex-1 list-none overflow-y-auto p-0" data-cart-items hidden></ul>
+
+    <footer class="border-t border-[#e3d9cb] px-7 py-5" data-cart-footer hidden>
+        <div class="flex items-baseline justify-between">
+            <span class="text-[11px] font-medium uppercase tracking-[.12em] text-[#6b5a4c]">Total</span>
+            <span class="font-serif text-xl font-bold text-burgundy" data-cart-total></span>
+        </div>
+        <p class="m-0 mt-2 text-xs text-muted">Our team will contact you to confirm your order.</p>
+    </footer>
+</dialog>
