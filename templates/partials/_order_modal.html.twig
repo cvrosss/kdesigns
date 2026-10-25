@@ -42,6 +42,17 @@
             Delivery fees apply based on location. Our team will contact you to confirm.
         </p>
 
+        <div class="mt-4" data-order-delivery-fields hidden>
+            <label class="{{ field_label }}" for="order-location">Delivery Address <span class="text-rose-dark">*</span></label>
+            <textarea class="{{ field_input }} mb-5 h-24 py-3" id="order-location" name="deliveryLocation" maxlength="500" autocomplete="street-address"></textarea>
+
+            <label class="{{ field_label }}" for="order-receiver">Receiver Name</label>
+            <input class="{{ field_input }} mb-5" type="text" id="order-receiver" name="deliveryReceiver" maxlength="150" placeholder="Same as your name">
+
+            <label class="{{ field_label }}" for="order-receiver-contact">Receiver Contact No.</label>
+            <input class="{{ field_input }}" type="tel" id="order-receiver-contact" name="deliveryContact" maxlength="50" placeholder="Same as your contact" inputmode="tel">
+        </div>
+
         <p class="mb-0 mt-4 rounded-[3px] bg-[#fbeceb] px-3 py-2.5 text-[13px] leading-normal text-red" role="alert" data-order-error hidden></p>
 
         <div class="mt-5 flex gap-3">

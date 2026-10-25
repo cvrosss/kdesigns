@@ -10,6 +10,8 @@
             <p class="alert alert--error" role="alert">{{ message }}</p>
         {% endfor %}
 
+        <input type="hidden" name="_token" value="{{ csrf_token('feedback') }}">
+
         <label for="feedback-name">Your Name</label>
         <input type="text" id="feedback-name" name="name" maxlength="80" placeholder="e.g. Maria Santos" required>
 

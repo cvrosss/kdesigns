@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Orders · {{ studio.full_name }}{% endblock %}
+
+{% block body %}
+    <section class="section section--catalog section--catalog-page">
+        <div class="container">
+            <div class="catalog__head">
+                <div>
+                    <p class="eyebrow eyebrow--rose">Your Account</p>
+                    <h2 class="heading heading--lg">My Orders</h2>
+                </div>
+            </div>
+
+            <div class="product-grid">
+                {% for order in orders %}
+                    <article class="product-card">
+                        <div class="product-card__media">
+                            <img src="/{{ order.productImage }}" alt="{{ order.productName }}" loading="lazy" onerror="this.hidden=true">
+                        </div>
+                        <div class="product-card__body">
+                            <p class="product-card__category">{{ order.reference }} · {{ order.status|capitalize }}</p>
+                            <h3 class="product-card__name">{{ order.productName }} × {{ order.quantity }}</h3>
+                            <p class="product-card__desc">
+                                {{ order.fulfillment == 'delivery' ? 'Delivery' : 'Pick Up' }}
+                                {% if order.dateNeeded %}· {{ order.dateNeeded|date('M j, Y') }}{% endif %}
+                                {% if order.timeNeeded %}· {{ ('2000-01-01 ' ~ order.timeNeeded)|date('g:i A') }}{% endif %}
+                            </p>
+                            <div class="product-card__foot">
+                                <span class="price">₱{{ order.total|number_format }}</span>
+                                <span class="stock stock--{{ order.status == 'cancelled' ? 'out' : (order.status == 'delivered' ? 'ok' : 'low') }}">{{ order.status|capitalize }}</span>
+                            </div>
+                        </div>
+                    </article>
+                {% else %}
+                    <p class="empty">You haven't placed any orders yet. <a href="{{ path('app_catalog') }}">Browse the catalog</a>.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+{% endblock %}

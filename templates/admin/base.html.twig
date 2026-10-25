@@ -33,6 +33,8 @@
                 }) }}
 
                 <main class="admin-content">
+                    {% for message in app.flashes('admin_success') %}<p class="flash flash--success" role="status">{{ message }}</p>{% endfor %}
+                    {% for message in app.flashes('admin_error') %}<p class="flash flash--error" role="alert">{{ message }}</p>{% endfor %}
                     {% block body %}{% endblock %}
                 </main>
 

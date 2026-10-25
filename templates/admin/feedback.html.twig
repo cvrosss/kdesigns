@@ -1,0 +1,46 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set active_nav = 'feedback' %}
+{% set page_overline = 'Feedback' %}
+{% set page_title = 'Customer Feedback' %}
+
+{% block title %}Customer Feedback · KDesigns Admin{% endblock %}
+
+{% block body %}
+    <div class="table-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for review in reviews %}
+                    <tr>
+                        <td class="row-title row-title--lg">{{ review.name }}</td>
+                        <td class="cell-message">{{ review.message }}</td>
+                        <td><span class="status {{ review.status == 'published' ? 'status--ok' : 'status--low' }}">{{ review.status|capitalize }}</span></td>
+                        <td class="cell-muted">{{ review.createdAt|date('M j, Y') }}</td>
+                        <td>
+                            <form method="post" action="{{ path('app_admin_feedback_update', {id: review.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('feedback_' ~ review.id) }}">
+                                {% if review.status == 'published' %}
+                                    <button type="submit" name="action" value="hide" class="btn-link">Hide</button>
+                                {% else %}
+                                    <button type="submit" name="action" value="publish" class="btn-link">Publish</button>
+                                {% endif %}
+                                <button type="submit" name="action" value="delete" class="btn-link btn-link--danger" onclick="return confirm('Delete this review permanently?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="empty-state">No feedback yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

@@ -9,9 +9,9 @@
 {% block body %}
     <div class="filters">
         <div class="filters__group">
-            <button type="button" class="btn-filter is-active">All Products</button>
-            <button type="button" class="btn-filter">Low Stock</button>
-            <button type="button" class="btn-filter">Out of Stock</button>
+            <a href="{{ path('app_inventory') }}" class="btn-filter{{ active_filter == '' ? ' is-active' : '' }}">All Products</a>
+            <a href="{{ path('app_inventory', {filter: 'low'}) }}" class="btn-filter{{ active_filter == 'low' ? ' is-active' : '' }}">Low Stock</a>
+            <a href="{{ path('app_inventory', {filter: 'out'}) }}" class="btn-filter{{ active_filter == 'out' ? ' is-active' : '' }}">Out of Stock</a>
         </div>
         <span class="filters__count">{{ total_products }} products</span>
     </div>
@@ -34,7 +34,7 @@
                     <tr>
                         <td>
                             <div class="product">
-                                <div class="product__thumb" aria-hidden="true"></div>
+                                <div class="product__thumb" aria-hidden="true">{% if row.image %}<img src="/{{ row.image }}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:inherit" onerror="this.hidden=true">{% endif %}</div>
                                 <div>
                                     <div class="product__name">{{ row.name }}</div>
                                     {% if row.tag %}<span class="product__tag">{{ row.tag }}</span>{% endif %}
@@ -54,8 +54,9 @@
                             {% endif %}
                         </td>
                         <td>
-                            <form class="restock" method="post" action="#">
-                                <input type="number" min="0" name="qty" value="{{ row.stock }}" aria-label="Restock quantity for {{ row.name }}">
+                            <form class="restock" method="post" action="{{ path('app_inventory_stock', {id: row.id, filter: active_filter}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('stock_' ~ row.id) }}">
+                                <input type="number" min="0" max="100000" name="qty" value="{{ row.stock }}" aria-label="Restock quantity for {{ row.name }}">
                                 <button type="submit" class="btn-save">Save</button>
                             </form>
                         </td>

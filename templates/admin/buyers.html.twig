@@ -50,7 +50,7 @@
                         <td class="cell-stock cell-stock--sm">{{ buyer.order_count }}</td>
                         <td class="cell-items cell-items--sm">{% for item in buyer.items %}<div>{{ item }}</div>{% endfor %}</td>
                         <td class="cell-price">₱{{ buyer.total_spent|number_format }}</td>
-                        <td class="cell-muted">{{ buyer.last_order_date }}</td>
+                        <td class="cell-muted">{{ buyer.last_order|date('M j, Y') }}</td>
                     </tr>
                 {% else %}
                     <tr><td colspan="7" class="empty-state">No buyers yet.</td></tr>
