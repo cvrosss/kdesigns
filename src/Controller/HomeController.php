@@ -2,8 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\Feedback;
+use App\Entity\User;
 use App\Service\ProductCatalog;
 use App\Service\TestimonialProvider;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -33,17 +36,22 @@ final class HomeController extends AbstractController
     }
 
     #[Route('/feedback', name: 'app_feedback', methods: ['POST'])]
-    public function feedback(Request $request): RedirectResponse
+    public function feedback(Request $request, EntityManagerInterface $em): RedirectResponse
     {
         $name = trim((string) $request->request->get('name', ''));
         $message = trim((string) $request->request->get('message', ''));
 
-        if ('' === $name || '' === $message) {
+        if (!$this->isCsrfTokenValid('feedback', $request->request->getString('_token'))) {
+            $this->addFlash('feedback_error', 'Your session expired — please try again.');
+        } elseif ('' === $name || '' === $message) {
             $this->addFlash('feedback_error', 'Please fill in your name and message.');
         } elseif (mb_strlen($name) > self::NAME_MAX_LENGTH || mb_strlen($message) > self::MESSAGE_MAX_LENGTH) {
             $this->addFlash('feedback_error', 'Your name or message is too long.');
         } else {
-            // TODO: persist the feedback once a storage layer exists.
+            $user = $this->getUser();
+            $em->persist((new Feedback())->setName($name)->setMessage($message)->setUser($user instanceof User ? $user : null));
+            $em->flush();
+
             $this->addFlash('feedback_success', 'Thank you for sharing your experience!');
         }
 
