@@ -141,11 +141,15 @@ final class AdminController extends AbstractController
             $this->addFlash('admin_error', 'Your session expired — please try again.');
         } else {
             $qty = filter_var($request->request->get('qty'), FILTER_VALIDATE_INT);
-            if (false === $qty || $qty < 0 || $qty > Product::MAX_STOCK) {
-                $this->addFlash('admin_error', sprintf('Stock must be a whole number between 0 and %d.', Product::MAX_STOCK));
+            if (false === $qty || $qty < 1) {
+                $this->addFlash('admin_error', 'Enter a whole number of 1 or more to add to the stock.');
             } else {
-                $this->orderService->setStock($product, $qty);
-                $this->addFlash('admin_success', sprintf('%s now has %d in stock.', $product->getName(), $qty));
+                try {
+                    $total = $this->orderService->restock($product, $qty);
+                    $this->addFlash('admin_success', sprintf('%s: added %d — now %d in stock.', $product->getName(), $qty, $total));
+                } catch (\InvalidArgumentException) {
+                    $this->addFlash('admin_error', sprintf('Stock cannot exceed %d units.', Product::MAX_STOCK));
+                }
             }
         }
 
@@ -216,6 +220,7 @@ final class AdminController extends AbstractController
             'items' => [sprintf('%s × %d', $o->getProductName(), $o->getQuantity())],
             'total' => $o->getTotal(),
             'status' => $o->getStatus(),
+            'statuses' => $o->allowedStatuses(),
             'date' => $o->getCreatedAt()->format('M j, Y'),
         ];
     }

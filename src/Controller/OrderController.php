@@ -24,6 +24,7 @@ final class OrderController extends AbstractController
     public function __construct(
         private readonly ProductRepository $products,
         private readonly OrderService $orders,
+        private readonly OrderRepository $orderRepository,
     ) {
     }
 
@@ -57,6 +58,7 @@ final class OrderController extends AbstractController
         $time = \DateTimeImmutable::createFromFormat('!H:i', (string) ($data['time'] ?? ''));
         $method = self::METHODS[$data['method'] ?? ''] ?? null;
         $quantity = (int) ($data['quantity'] ?? 1);
+        $payment = $data['paymentMethod'] ?? Order::PAYMENT_AT_SHOP;
 
         if ('' === $name || mb_strlen($name) > 80) {
             return $this->json(['error' => 'Please enter your name.'], 422);
@@ -73,6 +75,9 @@ final class OrderController extends AbstractController
         if (null === $method) {
             return $this->json(['error' => 'Please choose Pick Up or Delivery.'], 422);
         }
+        if (!\is_string($payment) || !\in_array($payment, Order::PAYMENT_METHODS, true)) {
+            return $this->json(['error' => 'Please choose a payment method.'], 422);
+        }
         if ($quantity < 1 || $quantity > 50) {
             return $this->json(['error' => 'Please choose a quantity between 1 and 50.'], 422);
         }
@@ -82,7 +87,15 @@ final class OrderController extends AbstractController
             ->setContact($contact)
             ->setFulfillment($method)
             ->setDateNeeded($date)
-            ->setTimeNeeded($time->format('H:i'));
+            ->setTimeNeeded($time->format('H:i'))
+            ->setPaymentMethod($payment);
+
+        // Only online methods carry a payment reference; reuse the one shown on the e-receipt if it is well-formed.
+        if (Order::PAYMENT_AT_SHOP !== $payment) {
+            $submitted = (string) ($data['receiptRef'] ?? '');
+            $taken = '' === $submitted || null !== $this->orderRepository->findOneBy(['receiptRef' => $submitted]);
+            $order->setReceiptRef(preg_match('/^KD\d{8}$/', $submitted) && !$taken ? $submitted : 'KD'.random_int(10000000, 99999999));
+        }
 
         if (Order::FULFILLMENT_DELIVERY === $method) {
             $receiver = trim((string) ($data['deliveryReceiver'] ?? '')) ?: $name;
@@ -109,7 +122,35 @@ final class OrderController extends AbstractController
             ], 409);
         }
 
-        return $this->json(['status' => 'received', 'reference' => $order->getReference()], 201);
+        return $this->json([
+            'status' => 'received',
+            'reference' => $order->getReference(),
+            'receiptRef' => $order->getReceiptRef(),
+            'paymentMethod' => $order->getPaymentMethod(),
+            'total' => $order->getTotal(),
+        ], 201);
+    }
+
+    /** The signed-in customer's own orders as JSON (read-only: shown in the cart drawer with their live status). */
+    #[Route('/orders', name: 'app_order_list', methods: ['GET'])]
+    public function list(OrderRepository $orders): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->json(['orders' => []]);
+        }
+
+        return $this->json(['orders' => array_map(static fn (Order $o) => [
+            'reference' => $o->getReference(),
+            'name' => $o->getProductName(),
+            'quantity' => $o->getQuantity(),
+            'total' => $o->getTotal(),
+            'image' => '/'.$o->getProductImage(),
+            'status' => $o->getStatus(),
+            'fulfillment' => Order::FULFILLMENT_DELIVERY === $o->getFulfillment() ? 'Delivery' : 'Pick Up',
+            'date' => $o->getDateNeeded()?->format('Y-m-d'),
+            'time' => $o->getTimeNeeded(),
+        ], $orders->findForUser($user))]);
     }
 
     /** The signed-in customer's own orders, newest first. */

@@ -76,7 +76,11 @@ final class AuthController extends AbstractController
             return $this->json(['error' => 'Invalid credentials.'], 401);
         }
 
-        return $this->json(['name' => $user->getName()]);
+        // Admins go straight to the dashboard; the modal's script follows `redirect` when present.
+        return $this->json(array_filter([
+            'name' => $user->getName(),
+            'redirect' => $this->isGranted('ROLE_ADMIN') ? $this->generateUrl('app_overview') : null,
+        ]));
     }
 
     #[Route('/logout', name: 'app_logout', methods: ['GET'])]
