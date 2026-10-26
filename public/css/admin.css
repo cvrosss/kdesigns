@@ -268,7 +268,8 @@ body {
 .cell-rank { width: 40px; font-family: var(--serif); color: var(--muted); }
 .star { color: var(--badge); }
 .status--pending { background: var(--amber-bg); color: #b7791f; }
-.status--processing { background: #e4ecfb; color: #2f5fd0; }
+.status--ready { background: #f1e6fa; color: #7a3fb0; }
+.status--processing, .status--successful { background: #e4ecfb; color: #2f5fd0; }
 .status--delivered { background: var(--green-bg); color: var(--green); }
 .status--cancelled { background: var(--red-bg); color: var(--red); }
 .status { font-weight: 500; }
@@ -305,3 +306,12 @@ body {
 }
 
 .empty-state { margin: 0; padding: 32px 24px; text-align: center; color: var(--muted); font-size: 13px; }
+
+/* Flash messages and link-style filter buttons */
+.flash { margin: 0 0 16px; padding: 10px 14px; border-radius: 3px; font-size: 13px; }
+.flash--success { background: var(--green-bg); color: var(--green); }
+.flash--error { background: var(--red-bg); color: var(--red); }
+a.btn-filter { text-decoration: none; display: inline-block; }
+.btn-link { background: none; border: 0; padding: 0; margin-right: 10px; cursor: pointer; color: var(--burgundy); font: inherit; font-size: 12px; text-decoration: underline; }
+.btn-link--danger { color: var(--red); }
+.cell-message { max-width: 520px; white-space: normal; line-height: 1.5; }

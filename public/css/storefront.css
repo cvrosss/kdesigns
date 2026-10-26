@@ -91,6 +91,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .navbar--transparent:not(.is-scrolled) .btn--outline { color: #fff; border-color: rgba(255, 255, 255, .7); }
 .navbar--transparent:not(.is-scrolled) .navbar__links a:hover { color: #fff; opacity: .8; }
 
+[data-cart-empty][hidden] { display: none; }
 [data-cart-count]:not(:empty)::before { content: ' ('; }
 [data-cart-count]:not(:empty)::after { content: ')'; }
 .btn.is-added { background: var(--green); }
@@ -322,3 +323,25 @@ body:has(dialog[open]) { overflow: hidden; }
     .footer__grid { grid-template-columns: 1fr; }
     .feedback { padding: 28px 20px; }
 }
+
+/* Floating shortcut to the admin dashboard (admins only) */
+.dashboard-fab {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 50;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 999px;
+    background: #1e7a4f;
+    color: #fff;
+    font: 700 12px/1 var(--sans, 'Inter', system-ui, sans-serif);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .25);
+    transition: background .15s, transform .15s;
+}
+.dashboard-fab:hover { background: #17603e; transform: translateY(-1px); }
