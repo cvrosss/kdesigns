@@ -54,9 +54,9 @@
                             {% endif %}
                         </td>
                         <td>
-                            <form class="restock" method="post" action="{{ path('app_inventory_stock', {id: row.id, filter: active_filter}) }}">
+                            <form class="restock" method="post" action="{{ path('app_inventory_stock', {id: row.id, filter: active_filter}) }}" onsubmit="this.querySelector('button').disabled = true">
                                 <input type="hidden" name="_token" value="{{ csrf_token('stock_' ~ row.id) }}">
-                                <input type="number" min="0" max="100000" name="qty" value="{{ row.stock }}" aria-label="Restock quantity for {{ row.name }}">
+                                <input type="number" min="1" max="100000" step="1" name="qty" value="" placeholder="+ Qty" required aria-label="Quantity to add to {{ row.name }}">
                                 <button type="submit" class="btn-save">Save</button>
                             </form>
                         </td>

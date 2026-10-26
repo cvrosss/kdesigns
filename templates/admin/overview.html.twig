@@ -49,7 +49,7 @@
                     </div>
                     <div class="row-end">
                         <div class="cell-price">₱{{ order.total|number_format }}</div>
-                        <span class="status status--{{ order.status }}">{{ order.status|capitalize }}</span>
+                        <span class="status status--{{ order.status }}">{{ order.status|order_status }}</span>
                     </div>
                 </div>
             {% else %}

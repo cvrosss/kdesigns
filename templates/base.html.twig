@@ -20,6 +20,13 @@
             {% block body %}{% endblock %}
         </main>
 
+        {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('app_overview') }}" class="dashboard-fab">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 12l4-4"/><path d="M7.5 16.5a6 6 0 0 1 0-9"/></svg>
+                Dashboard
+            </a>
+        {% endif %}
+
         {{ include('partials/_footer.html.twig') }}
         {{ include('partials/_auth_modal.html.twig') }}
         {{ include('partials/_order_modal.html.twig') }}

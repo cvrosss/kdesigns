@@ -11,7 +11,7 @@
         <div class="filters__group">
             <a href="{{ path('app_orders') }}" class="btn-filter{{ active_status is null ? ' is-active' : '' }}">All ({{ total_orders }})</a>
             {% for status in statuses %}
-                <a href="{{ path('app_orders', {status: status}) }}" class="btn-filter{{ active_status == status ? ' is-active' : '' }}">{{ status|capitalize }} ({{ status_counts[status]|default(0) }})</a>
+                <a href="{{ path('app_orders', {status: status}) }}" class="btn-filter{{ active_status == status ? ' is-active' : '' }}">{{ status|order_status }} ({{ status_counts[status]|default(0) }})</a>
             {% endfor %}
         </div>
     </div>
@@ -38,13 +38,13 @@
                         <td class="cell-muted">{{ order.email }}</td>
                         <td class="cell-items">{% for item in order.items %}<div>{{ item }}</div>{% endfor %}</td>
                         <td class="cell-price">₱{{ order.total|number_format }}</td>
-                        <td><span class="status status--{{ order.status }}">{{ order.status|capitalize }}</span></td>
+                        <td><span class="status status--{{ order.status }}">{{ order.status|order_status }}</span></td>
                         <td>
                             <form method="post" action="{{ path('app_order_status', {reference: order.id, status: active_status}) }}" class="restock">
                                 <input type="hidden" name="_token" value="{{ csrf_token('order_status_' ~ order.id) }}">
                                 <select name="status" class="select" aria-label="Update status for {{ order.id }}" onchange="this.form.requestSubmit()">
-                                    {% for s in statuses %}
-                                        <option value="{{ s }}"{{ s == order.status ? ' selected' : '' }}>{{ s|capitalize }}</option>
+                                    {% for s in order.statuses %}
+                                        <option value="{{ s }}"{{ s == order.status ? ' selected' : '' }}>{{ s|order_status }}</option>
                                     {% endfor %}
                                 </select>
                                 <noscript><button type="submit" class="btn-save">Save</button></noscript>

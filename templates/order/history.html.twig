@@ -19,7 +19,7 @@
                             <img src="/{{ order.productImage }}" alt="{{ order.productName }}" loading="lazy" onerror="this.hidden=true">
                         </div>
                         <div class="product-card__body">
-                            <p class="product-card__category">{{ order.reference }} · {{ order.status|capitalize }}</p>
+                            <p class="product-card__category">{{ order.reference }} · {{ order.status|order_status }}</p>
                             <h3 class="product-card__name">{{ order.productName }} × {{ order.quantity }}</h3>
                             <p class="product-card__desc">
                                 {{ order.fulfillment == 'delivery' ? 'Delivery' : 'Pick Up' }}
@@ -28,7 +28,7 @@
                             </p>
                             <div class="product-card__foot">
                                 <span class="price">₱{{ order.total|number_format }}</span>
-                                <span class="stock stock--{{ order.status == 'cancelled' ? 'out' : (order.status == 'delivered' ? 'ok' : 'low') }}">{{ order.status|capitalize }}</span>
+                                <span class="stock stock--{{ order.status == 'cancelled' ? 'out' : (order.status in ['delivered', 'successful'] ? 'ok' : 'low') }}">{{ order.status|order_status }}</span>
                             </div>
                         </div>
                     </article>

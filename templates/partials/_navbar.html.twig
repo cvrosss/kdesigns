@@ -13,7 +13,6 @@
         <div class="navbar__actions">
             {% if app.user %}
                 <span class="navbar__user">Hi, {{ app.user.name|split(' ')|first }}</span>
-                {% if is_granted('ROLE_ADMIN') %}<a href="{{ path('app_overview') }}" class="btn btn--outline btn--sm">Admin</a>{% endif %}
                 <a href="{{ path('app_my_orders') }}" class="btn btn--outline btn--sm">My Orders</a>
                 <a href="{{ logout_path() }}" class="btn btn--outline btn--sm">Log Out</a>
             {% else %}
