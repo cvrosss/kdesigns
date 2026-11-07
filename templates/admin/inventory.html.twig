@@ -13,7 +13,10 @@
             <a href="{{ path('app_inventory', {filter: 'low'}) }}" class="btn-filter{{ active_filter == 'low' ? ' is-active' : '' }}">Low Stock</a>
             <a href="{{ path('app_inventory', {filter: 'out'}) }}" class="btn-filter{{ active_filter == 'out' ? ' is-active' : '' }}">Out of Stock</a>
         </div>
-        <span class="filters__count">{{ total_products }} products</span>
+        <div class="filters__group">
+            <span class="filters__count">{{ total_products }} products</span>
+            <button type="button" class="btn-save" data-product-open>+ Add Product</button>
+        </div>
     </div>
 
     <div class="table-card">
@@ -56,6 +59,7 @@
                         <td>
                             <form class="restock" method="post" action="{{ path('app_inventory_stock', {id: row.id, filter: active_filter}) }}" onsubmit="this.querySelector('button').disabled = true">
                                 <input type="hidden" name="_token" value="{{ csrf_token('stock_' ~ row.id) }}">
+                                <input type="hidden" name="request_id" value="{{ row.restock_key }}">
                                 <input type="number" min="1" max="100000" step="1" name="qty" value="" placeholder="+ Qty" required aria-label="Quantity to add to {{ row.name }}">
                                 <button type="submit" class="btn-save">Save</button>
                             </form>
@@ -67,4 +71,83 @@
             </tbody>
         </table>
     </div>
+
+    {# Create-product modal. Reopens automatically when the server rejected the submission. #}
+    {% set form_errors_present = product_form.vars.submitted and not product_form.vars.valid %}
+    <dialog class="modal" data-product-modal{{ form_errors_present ? ' data-open-on-load' : '' }} aria-labelledby="product-modal-title">
+        {{ form_start(product_form, {action: path('app_inventory_new', {filter: active_filter}), attr: {class: 'modal__form', novalidate: 'novalidate', enctype: 'multipart/form-data'}}) }}
+            <header class="modal__head">
+                <h2 id="product-modal-title">Add Product</h2>
+                <button type="button" class="modal__close" data-product-close aria-label="Close">&times;</button>
+            </header>
+
+            <div class="modal__body">
+                {{ form_errors(product_form) }}
+
+                <div class="field field--full">
+                    {{ form_label(product_form.name) }}
+                    {{ form_widget(product_form.name) }}
+                    {{ form_errors(product_form.name) }}
+                </div>
+
+                <div class="field">
+                    {{ form_label(product_form.category) }}
+                    {{ form_widget(product_form.category) }}
+                    {{ form_errors(product_form.category) }}
+                </div>
+
+                <div class="field">
+                    {{ form_label(product_form.badge) }}
+                    {{ form_widget(product_form.badge) }}
+                    {{ form_errors(product_form.badge) }}
+                </div>
+
+                <div class="field field--full">
+                    {{ form_label(product_form.description) }}
+                    {{ form_widget(product_form.description) }}
+                    {{ form_errors(product_form.description) }}
+                </div>
+
+                <div class="field">
+                    {{ form_label(product_form.price) }}
+                    {{ form_widget(product_form.price) }}
+                    {{ form_errors(product_form.price) }}
+                </div>
+
+                <div class="field">
+                    {{ form_label(product_form.stock) }}
+                    {{ form_widget(product_form.stock) }}
+                    {{ form_errors(product_form.stock) }}
+                </div>
+
+                <div class="field field--full">
+                    {{ form_label(product_form.imageFile) }}
+                    {{ form_widget(product_form.imageFile) }}
+                    <small class="field__hint">JPG, PNG or WebP, up to 2 MB.</small>
+                    {{ form_errors(product_form.imageFile) }}
+                </div>
+            </div>
+
+            <footer class="modal__foot">
+                <button type="button" class="btn-filter" data-product-close>Cancel</button>
+                <button type="submit" class="btn-save">Save Product</button>
+            </footer>
+            {{ form_rest(product_form) }}
+        {{ form_end(product_form, {render_rest: false}) }}
+    </dialog>
+
+    <script>
+        (() => {
+            const modal = document.querySelector('[data-product-modal]');
+            if (!modal) return;
+            document.querySelectorAll('[data-product-open]').forEach((b) => b.addEventListener('click', () => modal.showModal()));
+            modal.querySelectorAll('[data-product-close]').forEach((b) => b.addEventListener('click', () => modal.close()));
+            // Clicking the dimmed backdrop (the dialog element itself) closes it.
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.close(); });
+            modal.querySelector('form').addEventListener('submit', (e) => {
+                e.currentTarget.querySelector('[type=submit]').disabled = true;
+            });
+            if (modal.hasAttribute('data-open-on-load')) modal.showModal();
+        })();
+    </script>
 {% endblock %}
