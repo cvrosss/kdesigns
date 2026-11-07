@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Repository\OrderRepository;
 use App\Repository\ProductRepository;
 use App\Service\InsufficientStockException;
+use App\Service\OrderSchedule;
 use App\Service\OrderService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,6 +26,7 @@ final class OrderController extends AbstractController
         private readonly ProductRepository $products,
         private readonly OrderService $orders,
         private readonly OrderRepository $orderRepository,
+        private readonly OrderSchedule $schedule,
     ) {
     }
 
@@ -66,8 +68,15 @@ final class OrderController extends AbstractController
         if (mb_strlen($contact) > 30 || \strlen(preg_replace('/\D/', '', $contact)) < 7) {
             return $this->json(['error' => 'Please enter a valid contact number.'], 422);
         }
-        if (false === $date || $date < new \DateTimeImmutable('today')) {
+        if (false === $date) {
             return $this->json(['error' => 'Please choose today or a later date.'], 422);
+        }
+        if (!$this->schedule->isOrderable($date)) {
+            return $this->json([
+                'error' => $date->format('Y-m-d') === $this->schedule->today()
+                    ? 'Same-day orders close at 5:00 PM. Please choose tomorrow or a later date.'
+                    : 'Please choose today or a later date.',
+            ], 422);
         }
         if (false === $time || !\in_array($time->format('H:i'), self::SLOTS, true)) {
             return $this->json(['error' => 'Please choose a time between 10:00 AM and 6:00 PM.'], 422);
