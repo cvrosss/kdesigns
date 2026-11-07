@@ -79,7 +79,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .navbar__links { display: flex; gap: 40px; }
 .navbar__links a { font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; text-decoration: none; }
 .navbar__links a:hover { color: var(--rose-dark); }
-.navbar__actions { display: flex; justify-content: flex-end; gap: 12px; }
+.navbar__actions { display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
 
 .navbar--transparent:not(.is-scrolled) {
     background: transparent;
@@ -129,7 +129,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .section { padding: 96px 0; }
 .section--cream { background: var(--cream); }
 .section--catalog { background: #eee6d9; }
-.section--catalog-page { padding-top: 100px; }
+.section--catalog-page { padding-top: 100px; background: var(--cream); }
 .section--catalog-page { min-height: calc(100vh - var(--nav-height)); }
 .section--burgundy { background: var(--burgundy-dark); color: #fff; }
 .section__head--center { text-align: center; margin-bottom: 56px; }
@@ -213,12 +213,35 @@ ul { list-style: none; margin: 0; padding: 0; }
 .stock--ok { background: var(--green-bg); color: var(--green); }
 .stock--low { background: var(--amber-bg); color: var(--amber); }
 .stock--out { background: transparent; color: var(--red); padding-left: 0; }
+/* .btn sets its own display, which would otherwise beat the hidden attribute used by the live stock swap. */
+.product-card__foot [hidden] { display: none; }
 .empty { grid-column: 1 / -1; padding: 48px 0; text-align: center; color: var(--muted); }
 .empty--light { color: rgba(255, 255, 255, .7); }
 
 /* ---------- Testimonials ---------- */
-.testimonial-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; align-items: stretch; }
-.testimonial { margin: 0; padding: 32px; display: flex; flex-direction: column; background: var(--burgundy-card); border: 1px solid rgba(255, 255, 255, .08); border-radius: 3px; }
+.carousel__track {
+    --gap: 24px;
+    --per-view: 4;
+    display: flex;
+    gap: var(--gap);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+}
+.carousel__track::-webkit-scrollbar { display: none; }
+.carousel__track:focus-visible { outline: 2px solid var(--rose); outline-offset: 4px; }
+.carousel { position: relative; }
+/* Arrows float on the left and right edges of the row, vertically centred. Half of each button sits over the card's
+   32px padding (never its text); on very wide screens there is room to move them out into the gutter. */
+.carousel__controls { position: absolute; inset: 0 -22px; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
+.carousel__controls[hidden] { display: none; }
+@media (min-width: 1700px) { .carousel__controls { inset: 0 -68px; } }
+.carousel__btn { width: 44px; height: 44px; display: grid; place-items: center; color: #fff; background: var(--burgundy-dark); border: 1px solid rgba(255, 255, 255, .35); border-radius: 50%; cursor: pointer; pointer-events: auto; box-shadow: 0 4px 14px rgba(0, 0, 0, .3); transition: background-color .15s, border-color .15s; }
+.carousel__btn:hover:not(:disabled) { background: var(--rose-dark); border-color: var(--rose-dark); }
+.carousel__btn:focus-visible { outline: 2px solid var(--rose); outline-offset: 3px; }
+.carousel__btn:disabled { opacity: .35; cursor: default; }
+.testimonial { flex: 0 0 calc((100% - (var(--per-view) - 1) * var(--gap)) / var(--per-view)); scroll-snap-align: start; margin: 0; padding: 32px; display: flex; flex-direction: column; background: var(--burgundy-card); border: 1px solid rgba(255, 255, 255, .08); border-radius: 3px; }
 .testimonial__mark { font: 700 40px/1 var(--serif); color: var(--rose); height: 28px; }
 .testimonial blockquote { margin: 16px 0 28px; flex: 1; line-height: 1.85; color: rgba(255, 255, 255, .92); }
 .testimonial figcaption { display: flex; align-items: center; gap: 12px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, .12); }
@@ -283,6 +306,8 @@ body:has(dialog[open]) { overflow: hidden; }
 .auth__panel input:focus { outline: 2px solid var(--burgundy); outline-offset: 1px; background: #fff; }
 .auth__panel input[aria-invalid='true'] { border-color: var(--red); }
 .auth__panel .btn { margin-top: 4px; padding: 15px 32px; border-radius: 3px; }
+.auth__panel .auth__check { display: flex; align-items: center; gap: 10px; margin: -4px 0 20px; font-size: 13px; letter-spacing: 0; text-transform: none; cursor: pointer; }
+.auth__panel .auth__check input { width: 16px; height: 16px; margin: 0; accent-color: var(--burgundy); }
 .auth__message { margin: 0 0 14px; padding: 10px 12px; font-size: 13px; line-height: 1.5; color: var(--red); background: #fbeceb; border-radius: 3px; }
 .auth__message--info { color: #5a4a1a; background: var(--amber-bg); }
 
@@ -302,7 +327,8 @@ body:has(dialog[open]) { overflow: hidden; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1100px) {
-    .product-grid, .testimonial-grid { grid-template-columns: repeat(2, 1fr); }
+    .product-grid { grid-template-columns: repeat(2, 1fr); }
+    .carousel__track { --per-view: 2; }
     .story__media { max-width: 600px; margin-right: 32px; }
     .story--page { padding-bottom: 80px; }
     .story__grid { grid-template-columns: 1fr; gap: 48px; }
@@ -315,7 +341,8 @@ body:has(dialog[open]) { overflow: hidden; }
     .navbar__inner { flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; }
     .navbar__links { flex-basis: 100%; order: 3; justify-content: center; gap: 24px; }
     :root { --nav-height: 98px; }
-    .product-grid, .testimonial-grid { grid-template-columns: 1fr; }
+    .product-grid { grid-template-columns: 1fr; }
+    .carousel__track { --per-view: 1; }
     .story__media { margin: 0 24px 24px 24px; }
     .story__img--secondary { right: -24px; bottom: -24px; }
     .story__badge { left: -16px; }
