@@ -65,7 +65,7 @@
             {% for product in stock_alerts %}
                 <div class="panel__row panel__row--center">
                     <div class="product">
-                        <div class="product__thumb product__thumb--sm" aria-hidden="true"></div>
+                        <div class="product__thumb product__thumb--sm" aria-hidden="true">{% if product.image %}<img src="/{{ product.image }}" alt="" loading="lazy" onerror="this.hidden=true">{% endif %}</div>
                         <div>
                             <div class="row-title">{{ product.name }}</div>
                             <div class="cell-category cell-category--sm">{{ product.category }}</div>
