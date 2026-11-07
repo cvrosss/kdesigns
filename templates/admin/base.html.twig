@@ -22,7 +22,7 @@
         <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
         {% endif %}
     </head>
-    <body>
+    <body{% if page_class is defined %} class="{{ page_class }}"{% endif %}>
         <div class="admin-shell">
             {{ include('admin/_sidebar.html.twig', {active: active_nav|default('')}) }}
 
