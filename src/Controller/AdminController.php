@@ -5,13 +5,16 @@ namespace App\Controller;
 use App\Entity\Feedback;
 use App\Entity\Order;
 use App\Entity\Product;
+use App\Form\ProductType;
 use App\Repository\FeedbackRepository;
 use App\Repository\OrderRepository;
 use App\Repository\ProductRepository;
 use App\Service\InsufficientStockException;
 use App\Service\OrderService;
+use App\Service\ProductImageUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,6 +29,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class AdminController extends AbstractController
 {
     public const LOW_STOCK_THRESHOLD = 5;
+
+    private const RESTOCK_KEYS_SESSION = 'restock_keys';
 
     public function __construct(
         private readonly OrderRepository $orders,
@@ -53,6 +58,7 @@ final class AdminController extends AbstractController
             'stock_alerts' => array_map(static fn (Product $p) => [
                 'name' => $p->getName(),
                 'category' => $p->getCategory()->getCategoryname(),
+                'image' => $p->getImage(),
                 'stock' => $p->getStock(),
             ], $this->products->findLowStock(self::LOW_STOCK_THRESHOLD)),
         ]);
@@ -106,6 +112,33 @@ final class AdminController extends AbstractController
     #[Route('/inventory', name: 'app_inventory', methods: ['GET'])]
     public function inventory(Request $request): Response
     {
+        return $this->renderInventory($request, $this->createForm(ProductType::class, new Product()));
+    }
+
+    #[Route('/inventory/new', name: 'app_inventory_new', methods: ['POST'])]
+    public function createProduct(Request $request, EntityManagerInterface $em, ProductImageUploader $uploader): Response
+    {
+        $product = new Product();
+        $form = $this->createForm(ProductType::class, $product);
+        $form->handleRequest($request);
+
+        if (!$form->isSubmitted() || !$form->isValid()) {
+            // Re-render with the modal open so the admin keeps what they typed and sees the errors.
+            return $this->renderInventory($request, $form, Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $product->setImage($uploader->upload($form->get('imageFile')->getData(), $product->getName()));
+        $product->setSortOrder($this->products->nextSortOrder());
+        $em->persist($product);
+        $em->flush();
+
+        $this->addFlash('admin_success', sprintf('%s added to the catalog.', $product->getName()));
+
+        return $this->redirectToRoute('app_inventory', [], Response::HTTP_SEE_OTHER);
+    }
+
+    private function renderInventory(Request $request, FormInterface $productForm, int $status = Response::HTTP_OK): Response
+    {
         $filter = $request->query->getString('filter');
         $products = $this->products->findCatalog();
         $total = \count($products);
@@ -127,11 +160,13 @@ final class AdminController extends AbstractController
                 'price' => $p->getPrice(),
                 'stock' => $p->getStock(),
                 'image' => $p->getImage(),
+                'restock_key' => bin2hex(random_bytes(8)),
             ], $products),
             'total_products' => $total,
             'low_stock_threshold' => self::LOW_STOCK_THRESHOLD,
             'active_filter' => $filter,
-        ]);
+            'product_form' => $productForm,
+        ], new Response(status: $status));
     }
 
     #[Route('/inventory/{id}/stock', name: 'app_inventory_stock', methods: ['POST'])]
@@ -141,11 +176,21 @@ final class AdminController extends AbstractController
             $this->addFlash('admin_error', 'Your session expired — please try again.');
         } else {
             $qty = filter_var($request->request->get('qty'), FILTER_VALIDATE_INT);
+            // Every restock form carries a one-time key, so a resent request (double click, retry) cannot add twice.
+            $key = $request->request->getString('request_id');
+            $session = $request->getSession();
+            $applied = $session->get(self::RESTOCK_KEYS_SESSION, []);
+
             if (false === $qty || $qty < 1) {
                 $this->addFlash('admin_error', 'Enter a whole number of 1 or more to add to the stock.');
+            } elseif ('' !== $key && \in_array($key, $applied, true)) {
+                $this->addFlash('admin_error', sprintf('%s: that restock was already applied.', $product->getName()));
             } else {
                 try {
                     $total = $this->orderService->restock($product, $qty);
+                    if ('' !== $key) {
+                        $session->set(self::RESTOCK_KEYS_SESSION, \array_slice([...$applied, $key], -50));
+                    }
                     $this->addFlash('admin_success', sprintf('%s: added %d — now %d in stock.', $product->getName(), $qty, $total));
                 } catch (\InvalidArgumentException) {
                     $this->addFlash('admin_error', sprintf('Stock cannot exceed %d units.', Product::MAX_STOCK));
