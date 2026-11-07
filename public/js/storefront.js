@@ -13,8 +13,9 @@
     window.addEventListener('scroll', update, { passive: true });
 })();
 
-// Cart: lists the signed-in customer's confirmed orders with their live status. It is read-only: only an
-// admin can change a status (Pending -> Successful, or Delivered for delivery orders).
+// Cart: lists the signed-in customer's orders that are still in progress (Pending / Ready for Pick up) with their
+// live status. It is read-only: only an admin can change a status. Once an order is Successful, Delivered or
+// Cancelled it leaves the cart and is kept under My Orders, so the cart empties when everything is done.
 (function () {
     var link = document.querySelector('[data-cart-link]');
     var badge = document.querySelector('[data-cart-count]');
@@ -22,6 +23,8 @@
     var canDrawer = !!drawer && typeof drawer.showModal === 'function';
     var signedIn = document.body.hasAttribute('data-authenticated');
     var timer = null;
+
+    var IN_PROGRESS = ['pending', 'ready'];
 
     var STATUSES = {
         pending: { label: 'Pending', classes: 'bg-[#fdf0d5] text-[#9a6700]' },
@@ -64,16 +67,11 @@
 
         var list = drawer.querySelector('[data-cart-items]');
         drawer.querySelector('[data-cart-empty]').hidden = orders.length > 0;
-        drawer.querySelector('[data-cart-footer]').hidden = orders.length === 0;
         list.hidden = orders.length === 0;
         list.textContent = '';
 
-        var sum = 0;
         orders.forEach(function (order) {
             var status = STATUSES[order.status] || { label: order.status, classes: 'bg-cream-dark text-muted' };
-            if (order.status !== 'cancelled') {
-                sum += order.total;
-            }
 
             var row = el('li', 'flex gap-4 border-b border-[#e3d9cb] px-7 py-5');
             var img = el('img', 'h-16 w-16 flex-none rounded-[3px] bg-cream-dark object-cover');
@@ -98,8 +96,6 @@
             row.appendChild(body);
             list.appendChild(row);
         });
-
-        drawer.querySelector('[data-cart-total]').textContent = peso(sum);
     }
 
     function render(orders) {
@@ -120,7 +116,9 @@
         }
         fetch('/orders', { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' })
             .then(function (response) { return response.ok ? response.json() : { orders: [] }; })
-            .then(function (data) { render(data.orders || []); })
+            .then(function (data) {
+                render((data.orders || []).filter(function (o) { return IN_PROGRESS.indexOf(o.status) !== -1; }));
+            })
             .catch(function () { /* keep what is on screen; the next refresh will retry */ });
     }
 
@@ -269,6 +267,8 @@
             var body = { email: panel.querySelector('[name="email"]').value, password: panel.querySelector('[name="password"]').value };
             if (signup) {
                 body.name = panel.querySelector('[name="name"]').value;
+            } else {
+                body._remember_me = panel.querySelector('[name="_remember_me"]').checked;
             }
 
             submitButton.disabled = true;
@@ -341,9 +341,66 @@
 
     function pad(n) { return String(n).padStart(2, '0'); }
 
+    // Same-day orders close at the cutoff (5:00 PM Asia/Manila). Both values come from the server (OrderSchedule),
+    // and the clock is read in the shop's timezone, not the visitor's.
+    var TIMEZONE = dialog.dataset.orderTimezone || 'Asia/Manila';
+    var cutoff = (dialog.dataset.orderCutoff || '17:00').split(':');
+    var CUTOFF_SECONDS = parseInt(cutoff[0], 10) * 3600 + parseInt(cutoff[1], 10) * 60;
+    var clock = new Intl.DateTimeFormat('en-CA', {
+        timeZone: TIMEZONE, year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
+    });
+    var refreshTimer = null;
+
+    function shopNow() {
+        var p = {};
+        clock.formatToParts(new Date()).forEach(function (part) { p[part.type] = part.value; });
+        return {
+            date: p.year + '-' + p.month + '-' + p.day,
+            seconds: parseInt(p.hour, 10) * 3600 + parseInt(p.minute, 10) * 60 + parseInt(p.second, 10)
+        };
+    }
+
     function today() {
-        var now = new Date();
-        return now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+        return shopNow().date;
+    }
+
+    // Today until the cutoff, then tomorrow.
+    function earliestDate() {
+        var now = shopNow();
+        if (now.seconds < CUTOFF_SECONDS) {
+            return now.date;
+        }
+        var d = now.date.split('-');
+        return new Date(Date.UTC(+d[0], +d[1] - 1, +d[2] + 1)).toISOString().slice(0, 10);
+    }
+
+    function closedMessage() {
+        return 'Same-day orders close at ' + formatTime(dialog.dataset.orderCutoff || '17:00') + '. Please choose tomorrow or a later date.';
+    }
+
+    // Moves the picker's minimum date; a date picked earlier that is no longer allowed is cleared with a notice.
+    function refreshEarliestDate() {
+        var earliest = earliestDate();
+        dateInput.min = earliest;
+        var picked = dateInput.value;
+        if (picked && picked < earliest) {
+            dateInput.value = '';
+            if (dialog.open && current === 'details') {
+                showError(picked === today() ? closedMessage() : 'Please choose today or a later date.', dateInput);
+            }
+        }
+    }
+
+    // Wakes at the next change (the cutoff, or midnight in the shop's timezone) so an open page updates by itself.
+    function scheduleRefresh() {
+        clearTimeout(refreshTimer);
+        var now = shopNow();
+        var next = now.seconds < CUTOFF_SECONDS ? CUTOFF_SECONDS : 86400;
+        refreshTimer = setTimeout(function () {
+            refreshEarliestDate();
+            scheduleRefresh();
+        }, (next - now.seconds) * 1000 + 250);
     }
 
     function formatTime(value) {
@@ -516,6 +573,16 @@
         });
     }
 
+    refreshEarliestDate();
+    scheduleRefresh();
+    // Timers are throttled or paused while a tab sleeps; re-check as soon as it is visible again.
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) {
+            refreshEarliestDate();
+            scheduleRefresh();
+        }
+    });
+
     document.addEventListener('click', function (event) {
         var button = event.target.closest('[data-add-to-cart]');
         if (!button) {
@@ -542,7 +609,7 @@
         finish.disabled = false;
         selectPaymentOption(null);
         selectMethod('Pick Up');
-        dateInput.min = today();
+        refreshEarliestDate();
         show('details');
         dialog.showModal();
         form.elements.name.focus();
@@ -603,8 +670,8 @@
         if (!date.value) {
             return fail(date, 'Please choose the date you need your order.');
         }
-        if (date.value < today()) {
-            return fail(date, 'Please choose today or a later date.');
+        if (date.value < earliestDate()) {
+            return fail(date, date.value === today() ? closedMessage() : 'Please choose today or a later date.');
         }
 
         details = {
@@ -666,4 +733,134 @@
     });
 
     finish.addEventListener('click', submitOrder);
+})();
+
+// Reviews carousel: the track scrolls and snaps natively (swipe, trackpad, arrow keys); the buttons just page it by
+// one card. They disable at either end, and the whole control row hides when every review already fits on screen.
+(function () {
+    var root = document.querySelector('[data-carousel]');
+    if (!root) {
+        return;
+    }
+
+    var track = root.querySelector('[data-carousel-track]');
+    var controls = root.querySelector('[data-carousel-controls]');
+    var prev = root.querySelector('[data-carousel-prev]');
+    var next = root.querySelector('[data-carousel-next]');
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function update() {
+        var max = track.scrollWidth - track.clientWidth;
+        controls.hidden = max <= 1;
+        prev.disabled = track.scrollLeft <= 1;
+        next.disabled = track.scrollLeft >= max - 1;
+    }
+
+    function page(direction) {
+        var card = track.firstElementChild;
+        var gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+        track.scrollBy({ left: direction * (card.offsetWidth + gap), behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+    }
+
+    prev.addEventListener('click', function () { page(-1); });
+    next.addEventListener('click', function () { page(1); });
+    track.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+})();
+
+// Live stock: while a catalog grid is on screen, poll /stock every few seconds and update each card's stock badge and
+// its Add to Cart / Sold Out button, so a restock (or someone else's order) shows up without a refresh. Polling pauses
+// while the tab is hidden and catches up immediately when it is shown again or the network returns; after a failed
+// request it backs off (up to 30s) and the next successful poll brings every card fully up to date.
+(function () {
+    var grid = document.querySelector('[data-stock-url]');
+    if (!grid || !window.fetch) {
+        return;
+    }
+
+    var url = grid.getAttribute('data-stock-url');
+    var INTERVAL = 3000;
+    var MAX_BACKOFF = 30000;
+    var failures = 0;
+    var timer = null;
+    var inFlight = false;
+
+    function apply(snapshot) {
+        grid.querySelectorAll('[data-product-card]').forEach(function (card) {
+            var state = snapshot[card.getAttribute('data-product-card')];
+            if (!state) {
+                return;
+            }
+
+            var badge = card.querySelector('[data-stock-badge]');
+            var add = card.querySelector('[data-add-to-cart]');
+            var soldOut = card.querySelector('[data-sold-out]');
+
+            if (badge) {
+                var className = 'stock stock--' + state.level;
+                if (badge.className !== className) {
+                    badge.className = className;
+                }
+                if (badge.textContent !== state.status) {
+                    badge.textContent = state.status;
+                }
+            }
+            if (add) {
+                add.hidden = !state.available;
+            }
+            if (soldOut) {
+                soldOut.hidden = state.available;
+            }
+        });
+    }
+
+    function schedule() {
+        var wait = Math.min(INTERVAL * Math.pow(2, failures), MAX_BACKOFF);
+        clearTimeout(timer);
+        // Jitter keeps many open tabs from hitting the server in the same instant.
+        timer = setTimeout(poll, wait * (0.85 + Math.random() * 0.3));
+    }
+
+    function poll() {
+        clearTimeout(timer);
+        if (document.hidden) {
+            return; // resumed by visibilitychange
+        }
+        if (inFlight) {
+            return;
+        }
+
+        inFlight = true;
+        fetch(url, { cache: 'no-cache', credentials: 'same-origin', headers: { Accept: 'application/json' } })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+                return response.json();
+            })
+            .then(function (data) {
+                failures = 0;
+                apply(data.stock || {});
+            })
+            .catch(function () {
+                failures += 1;
+            })
+            .then(function () {
+                inFlight = false;
+                schedule();
+            });
+    }
+
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) {
+            poll();
+        }
+    });
+    window.addEventListener('online', function () {
+        failures = 0;
+        poll();
+    });
+
+    poll();
 })();
