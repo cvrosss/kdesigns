@@ -211,6 +211,51 @@ body {
 }
 .btn-save:hover { background: var(--burgundy-dark); }
 
+/* ---------- Modal (add product) ---------- */
+.filters__group { align-items: center; }
+.modal {
+    width: min(560px, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+    margin: auto;
+    padding: 0;
+    overflow: auto;
+    color: var(--ink);
+    background: var(--surface);
+    border: 0;
+    border-radius: 4px;
+    box-shadow: 0 24px 64px rgba(30, 10, 12, .35);
+}
+.modal::backdrop { background: rgba(30, 14, 16, .55); }
+.modal__form { margin: 0; }
+.modal__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    color: #fff;
+    background: var(--burgundy);
+}
+.modal__head h2 { margin: 0; font: 700 20px var(--serif); }
+.modal__close { font-size: 24px; line-height: 1; color: rgba(255, 255, 255, .7); background: none; border: 0; cursor: pointer; }
+.modal__close:hover { color: #fff; }
+.modal__body { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 24px; }
+.modal__foot { display: flex; justify-content: flex-end; gap: 8px; padding: 0 24px 24px; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field--full { grid-column: 1 / -1; }
+.field label { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #6b5f55; }
+.field input, .field select, .field textarea {
+    padding: 10px 12px;
+    font: 14px var(--sans);
+    color: var(--ink);
+    background: var(--surface-head);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+}
+.field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid var(--burgundy); outline-offset: 1px; background: #fff; }
+.field__hint { font-size: 12px; color: var(--muted); }
+.field ul, .modal__body > ul { margin: 0; padding: 0; list-style: none; font-size: 12px; color: var(--red); }
+@media (max-width: 520px) { .modal__body { grid-template-columns: 1fr; } }
+
 .page-footer { padding: 32px 0 28px; font-size: 12px; color: var(--muted); }
 
 /* ---------- KPI cards ---------- */
