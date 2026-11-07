@@ -13,9 +13,9 @@
         </nav>
     </div>
 
-    <div class="product-grid">
+    <div class="product-grid" data-stock-url="{{ path('app_stock') }}">
         {% for product in products %}
-            <article class="product-card">
+            <article class="product-card" data-product-card="{{ product.id }}">
                 <div class="product-card__media">
                     {% if product.badge %}
                         <span class="badge badge--{{ product.badge|lower }}">{{ product.badge }}</span>
@@ -26,14 +26,12 @@
                     <p class="product-card__category">{{ product.category }}</p>
                     <h3 class="product-card__name">{{ product.name }}</h3>
                     <p class="product-card__desc">{{ product.description }}</p>
-                    <span class="stock stock--{{ product.stockLevel }}">{{ product.stockStatus }}</span>
+                    <span class="stock stock--{{ product.stockLevel }}" data-stock-badge>{{ product.stockStatus }}</span>
                     <div class="product-card__foot">
                         <span class="price">₱{{ product.price|number_format }}</span>
-                        {% if product.isAvailable %}
-                            <button type="button" class="btn btn--primary btn--sm" data-add-to-cart data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.price|number_format }}" data-product-image="/{{ product.image }}">Add to Cart</button>
-                        {% else %}
-                            <button type="button" class="btn btn--disabled btn--sm" disabled>Sold Out</button>
-                        {% endif %}
+                        {# Both buttons are always present; live stock updates just swap which one is shown. #}
+                        <button type="button" class="btn btn--primary btn--sm" data-add-to-cart data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.price|number_format }}" data-product-image="/{{ product.image }}"{{ product.isAvailable ? '' : ' hidden' }}>Add to Cart</button>
+                        <button type="button" class="btn btn--disabled btn--sm" data-sold-out disabled{{ product.isAvailable ? ' hidden' : '' }}>Sold Out</button>
                     </div>
                 </div>
             </article>
