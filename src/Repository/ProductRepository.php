@@ -38,6 +38,31 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /**
+     * Current stock of every product, read straight from the table (no entities, no joins), so it is
+     * cheap enough for the storefront to poll.
+     *
+     * @return array<int, int> product id => units in stock
+     */
+    public function findStockLevels(): array
+    {
+        $rows = $this->createQueryBuilder('p')
+            ->select('p.id', 'p.stock')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map('intval', array_column($rows, 'stock', 'id'));
+    }
+
+    /** Sort position that places a new product after every existing one in the catalog. */
+    public function nextSortOrder(): int
+    {
+        return 1 + (int) $this->createQueryBuilder('p')
+            ->select('MAX(p.sortOrder)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
      * Take $qty units out of stock only if that many exist. The check and the decrement are one
      * conditional UPDATE, so two shoppers racing for the last unit cannot both succeed.
      */
@@ -69,6 +94,25 @@ class ProductRepository extends ServiceEntityRepository
             // Typed as integers: untyped, MySQL would compare LEAST() arguments as strings.
             ['qty' => ParameterType::INTEGER, 'max' => ParameterType::INTEGER, 'id' => ParameterType::INTEGER],
         );
+    }
+
+    /**
+     * Add $qty to the stock held in the database right now (not to a value the browser saw), so
+     * concurrent orders or restocks are never overwritten. Refuses to pass the inventory ceiling.
+     */
+    public function restock(Product $product, int $qty): bool
+    {
+        if ($qty <= 0) {
+            return false;
+        }
+
+        $affected = $this->getEntityManager()->getConnection()->executeStatement(
+            'UPDATE product SET stock = stock + :qty WHERE id = :id AND stock + :qty <= :max',
+            ['qty' => $qty, 'max' => Product::MAX_STOCK, 'id' => $product->getId()],
+            ['qty' => ParameterType::INTEGER, 'max' => ParameterType::INTEGER, 'id' => ParameterType::INTEGER],
+        );
+
+        return $affected > 0;
     }
 
     /** Products with stock at or below $threshold (includes sold out), fewest first. */
