@@ -14,7 +14,7 @@ final class ProductCatalog
 {
     /** The "All" view is two rows of products in display order, then one row of these. */
     private const ALL_LEADING_COUNT = 8;
-    private const ALL_FEATURED_ROW = ['Citrus Sunrise Basket', 'Serenade Bloom Box', 'Floral Stand', 'Everlasting Glass Dome'];
+    private const ALL_FEATURED_ROW = ['Citrus Sunrise Basket', 'Serenade Bloom Box', 'Floral Stand', 'Lavender Dreams Preserved Dome'];
 
     public function __construct(
         private readonly ProductRepository $products,
@@ -61,7 +61,7 @@ final class ProductCatalog
         }
         ksort($featured);
 
-        return [...rray_slice($rest, 0, self::ALL_LEADING_COUNT), ...$featured];
+        return [...array_slice($rest, 0, self::ALL_LEADING_COUNT), ...$featured];
     }
 
     /**
