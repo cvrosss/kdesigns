@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Product;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ManagerRegistry;
@@ -32,6 +33,34 @@ class ProductRepository extends ServiceEntityRepository
 
         if (null !== $categorySlug) {
             $qb->andWhere('c.slug = :slug')->setParameter('slug', $categorySlug);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Products for the staff/admin records list: all of them, or only those created by $owner,
+     * optionally narrowed by a name search and a category.
+     *
+     * @return list<Product>
+     */
+    public function searchRecords(?string $term = null, ?User $owner = null, ?int $categoryId = null): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->addSelect('c', 'u')
+            ->join('p.category', 'c')
+            ->leftJoin('p.createdBy', 'u')
+            ->orderBy('p.createdAt', 'DESC')
+            ->addOrderBy('p.id', 'DESC');
+
+        if (null !== $term && '' !== $term) {
+            $qb->andWhere('p.name LIKE :q OR c.categoryname LIKE :q')->setParameter('q', '%'.addcslashes($term, '%_\\').'%');
+        }
+        if (null !== $owner) {
+            $qb->andWhere('p.createdBy = :owner')->setParameter('owner', $owner);
+        }
+        if (null !== $categoryId) {
+            $qb->andWhere('c.id = :cat')->setParameter('cat', $categoryId);
         }
 
         return $qb->getQuery()->getResult();

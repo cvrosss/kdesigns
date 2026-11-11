@@ -59,9 +59,26 @@ class Product
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
+    /** Staff member who added the product; null for the seeded catalog (admin-managed). */
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?User $createdBy = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+    }
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?User $createdBy): static
+    {
+        $this->createdBy = $createdBy;
+
+        return $this;
     }
 
     public function getId(): ?int
