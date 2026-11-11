@@ -17,7 +17,10 @@
         <input type="text" id="login-email" name="email" placeholder="hello@you.com" autocomplete="username" required>
 
         <label for="login-password">Password</label>
-        <input type="password" id="login-password" name="password" placeholder="Your password" autocomplete="current-password" required>
+        <div class="pw">
+            <input type="password" id="login-password" name="password" placeholder="Your password" autocomplete="current-password" required>
+            <button type="button" class="pw__toggle" data-pw-toggle aria-label="Show password" aria-pressed="false">{{ include('partials/_eye.svg.twig') }}</button>
+        </div>
 
         <label class="auth__check"><input type="checkbox" name="_remember_me" value="1"> Remember me</label>
 
@@ -33,7 +36,10 @@
         <input type="email" id="signup-email" name="email" placeholder="hello@you.com" autocomplete="email" required>
 
         <label for="signup-password">Password</label>
-        <input type="password" id="signup-password" name="password" placeholder="Min. 6 characters" autocomplete="new-password" minlength="6" required>
+        <div class="pw">
+            <input type="password" id="signup-password" name="password" placeholder="Min. 8 characters" autocomplete="new-password" minlength="8" required>
+            <button type="button" class="pw__toggle" data-pw-toggle aria-label="Show password" aria-pressed="false">{{ include('partials/_eye.svg.twig') }}</button>
+        </div>
 
         <p class="auth__message" role="status" data-auth-message hidden></p>
         <button type="submit" class="btn btn--primary btn--block">Create Account</button>

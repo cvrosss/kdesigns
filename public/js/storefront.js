@@ -215,6 +215,20 @@
 
     dialog.querySelector('[data-auth-close]').addEventListener('click', function () { dialog.close(); });
 
+    // Show / hide password. Re-hides whenever the dialog closes so it never stays revealed.
+    function setReveal(btn, show) {
+        var input = btn.parentNode.querySelector('input');
+        input.type = show ? 'text' : 'password';
+        btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+        btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    }
+    dialog.querySelectorAll('[data-pw-toggle]').forEach(function (btn) {
+        btn.addEventListener('click', function () { setReveal(btn, btn.getAttribute('aria-pressed') !== 'true'); });
+    });
+    dialog.addEventListener('close', function () {
+        dialog.querySelectorAll('[data-pw-toggle]').forEach(function (btn) { setReveal(btn, false); });
+    });
+
     // Clicking the dimmed backdrop (the dialog element itself, outside its content) dismisses it.
     dialog.addEventListener('click', function (event) {
         if (event.target === dialog) {
@@ -259,7 +273,7 @@
                     ? 'Please fill in all fields.'
                     : invalid.type === 'email'
                         ? 'Please enter a valid email address.'
-                        : 'Password must be at least 6 characters.');
+                        : 'Password must be at least 8 characters.');
                 return;
             }
 
@@ -285,7 +299,7 @@
                 }
                 submitButton.disabled = false;
                 show(result.status === 401
-                    ? 'Incorrect email or password.'
+                    ? (/disabled/.test(result.data.error || '') ? result.data.error : 'Incorrect email or password.')
                     : result.data.error || 'Something went wrong. Please try again.');
             }).catch(function () {
                 submitButton.disabled = false;

@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
@@ -44,7 +45,7 @@ final class AuthController extends AbstractController
             new Assert\Collection([
                 'name' => [new Assert\NotBlank(message: 'Please fill in all fields.'), new Assert\Length(max: 80, maxMessage: 'Your name is too long.')],
                 'email' => [new Assert\NotBlank(message: 'Please fill in all fields.'), new Assert\Email(message: 'Please enter a valid email address.'), new Assert\Length(max: 180)],
-                'password' => [new Assert\NotBlank(message: 'Please fill in all fields.'), new Assert\Length(min: 6, max: 72, minMessage: 'Password must be at least 6 characters.', maxMessage: 'Password is too long.')],
+                'password' => [new Assert\NotBlank(message: 'Please fill in all fields.'), new Assert\Length(min: 8, max: 72, minMessage: 'Password must be at least 8 characters.', maxMessage: 'Password is too long.')],
             ]),
         );
 
@@ -67,20 +68,34 @@ final class AuthController extends AbstractController
     }
 
     /**
-     * The json_login authenticator verifies the credentials before this runs; on success it falls through here.
+     * GET shows the login page (where anonymous visitors of protected pages land). POST is handled by the
+     * json_login authenticator, which verifies the credentials before this runs and falls through on success.
      */
-    #[Route('/login', name: 'app_login', methods: ['POST'])]
-    public function login(#[CurrentUser] ?User $user): JsonResponse
+    #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
+    public function login(Request $request, #[CurrentUser] ?User $user): Response
     {
+        if ($request->isMethod('GET')) {
+            return $this->getUser() ? $this->redirect($this->landingUrl()) : $this->render('auth/login.html.twig');
+        }
+
         if (null === $user) {
             return $this->json(['error' => 'Invalid credentials.'], 401);
         }
 
-        // Admins go straight to the dashboard; the modal's script follows `redirect` when present.
+        // Admins and staff go straight to their panel; the login script follows `redirect` when present.
         return $this->json(array_filter([
             'name' => $user->getName(),
-            'redirect' => $this->isGranted('ROLE_ADMIN') ? $this->generateUrl('app_overview') : null,
+            'redirect' => $this->isGranted('ROLE_STAFF') ? $this->landingUrl() : null,
         ]));
+    }
+
+    private function landingUrl(): string
+    {
+        return match (true) {
+            $this->isGranted('ROLE_ADMIN') => $this->generateUrl('app_overview'),
+            $this->isGranted('ROLE_STAFF') => $this->generateUrl('app_manage_products'),
+            default => $this->generateUrl('app_home'),
+        };
     }
 
     #[Route('/logout', name: 'app_logout', methods: ['GET'])]
