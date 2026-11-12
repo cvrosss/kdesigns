@@ -1,25 +1,56 @@
+name: kdesigns
 
 services:
-###> doctrine/doctrine-bundle ###
-  database:
-    image: postgres:${POSTGRES_VERSION:-16}-alpine
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-      # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
-    healthcheck:
-      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}"]
-      timeout: 5s
-      retries: 5
-      start_period: 60s
+  app:
+    build: .
+    container_name: kdesigns-app
+    ports:
+      - "8001:80"
+    env_file: .env.docker
     volumes:
-      - database_data:/var/lib/postgresql/data:rw
-      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./docker/db/data:/var/lib/postgresql/data:rw
-###< doctrine/doctrine-bundle ###
+      - .:/var/www/html
+      - app_vendor:/var/www/html/vendor
+      - app_var:/var/www/html/var
+    depends_on:
+      database:
+        condition: service_healthy
+
+  database:
+    image: mysql:8.0
+    container_name: kdesigns-mysql
+    env_file: .env.docker
+    environment:
+      MYSQL_DATABASE: kdesigns-db
+    ports:
+      - "3307:3306"
+    volumes:
+      - database_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: kdesigns-phpmyadmin
+    environment:
+      PMA_HOST: database
+    ports:
+      - "8081:80"
+    depends_on:
+      - database
 
 volumes:
-###> doctrine/doctrine-bundle ###
+  # Holds the shop's data; external so `docker compose down -v` can never delete it.
+  # First time on a new machine: docker volume create kdesigns-db-data
   database_data:
-###< doctrine/doctrine-bundle ###
+    name: kdesigns-db-data
+    external: true
+  app_vendor:
+  app_var:
+
+networks:
+  default:
+    name: kdesigns-network

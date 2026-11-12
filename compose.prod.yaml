@@ -1,0 +1,57 @@
+# Production stack. Run with:
+#   docker compose -f compose.prod.yaml --env-file .env.docker.prod up -d --build
+#
+# Differences from the development compose.yaml:
+#   - built with APP_ENV=prod (no debug output, no stack traces, opcache locked)
+#   - the source tree is baked into the image, not bind-mounted from the host
+#   - no phpMyAdmin
+#   - MySQL is reachable only from the app container, never from the host or the internet
+#   - the app connects as a least-privilege user, not root
+name: kdesigns-prod
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        APP_ENV: prod
+    restart: unless-stopped
+    ports:
+      # Put a TLS-terminating reverse proxy (Caddy, nginx, Traefik, your host's
+      # load balancer) in front of this; do not serve it over plain HTTP.
+      - "127.0.0.1:8000:80"
+    environment:
+      APP_ENV: prod
+      APP_SECRET: ${APP_SECRET:?APP_SECRET must be set}
+      DATABASE_URL: mysql://${MYSQL_USER:?}:${MYSQL_PASSWORD:?}@database:3306/${MYSQL_DATABASE:-kdesigns-db}?serverVersion=8.0&charset=utf8mb4
+      DEFAULT_URI: ${DEFAULT_URI:-https://localhost}
+    volumes:
+      # Uploaded product photos must outlive the container.
+      - product_images:/var/www/html/public/images/products
+      - app_var:/var/www/html/var
+    depends_on:
+      database:
+        condition: service_healthy
+
+  database:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-kdesigns-db}
+      MYSQL_USER: ${MYSQL_USER:?}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?}
+    # No `ports:` on purpose — the database is reachable only on the internal network.
+    volumes:
+      - database_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+volumes:
+  database_data:
+  product_images:
+  app_var:
