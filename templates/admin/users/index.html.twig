@@ -1,0 +1,64 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set active_nav = 'users' %}
+{% set page_overline = 'Accounts' %}
+{% set page_title = 'User Management' %}
+
+{% block title %}Users · KDesigns Admin{% endblock %}
+
+{% block body %}
+    <div class="filters">
+        <form class="search" method="get" action="{{ path('app_user_index') }}" role="search">
+            <input type="search" name="q" value="{{ term }}" placeholder="Search name or email" aria-label="Search users">
+            <select name="role" aria-label="Filter by role">
+                <option value="">All roles</option>
+                {% for label, value in role_choices %}
+                    <option value="{{ value }}"{{ role == value ? ' selected' : '' }}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn-filter">Search</button>
+            {% if term or role %}<a href="{{ path('app_user_index') }}" class="btn-filter">Clear</a>{% endif %}
+        </form>
+        <div class="filters__group">
+            <span class="filters__count">{{ users|length }} of {{ total }} accounts</span>
+            <a href="{{ path('app_user_new') }}" class="btn-save">+ Add User</a>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <table class="data-table data-table--stack">
+            <thead>
+                <tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Date created</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                    {% set r = u.primaryRole %}
+                    <tr>
+                        <td data-label="Name"><span>{{ u.name }}{% if u.id == app.user.id %} <span class="muted">(you)</span>{% endif %}</span></td>
+                        <td data-label="Email">{{ u.email }}</td>
+                        <td data-label="Role"><span class="role role--{{ r == 'ROLE_ADMIN' ? 'admin' : (r == 'ROLE_STAFF' ? 'staff' : 'user') }}">{{ r == 'ROLE_ADMIN' ? 'Admin' : (r == 'ROLE_STAFF' ? 'Staff' : 'Customer') }}</span></td>
+                        <td data-label="Status"><span class="status status--{{ u.active ? 'active' : 'disabled' }}">{{ u.active ? 'Active' : 'Disabled' }}</span></td>
+                        <td data-label="Created">{{ u.createdAt|date('M j, Y') }}</td>
+                        <td data-label="">
+                            <div class="row-actions">
+                                <a href="{{ path('app_user_edit', {id: u.id}) }}" class="btn-filter">Edit</a>
+                                {% if u.id != app.user.id %}
+                                    <form method="post" action="{{ path('app_user_toggle', {id: u.id, q: term, role: role}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('toggle_user_' ~ u.id) }}">
+                                        <button type="submit" class="btn-filter">{{ u.active ? 'Disable' : 'Enable' }}</button>
+                                    </form>
+                                    <form method="post" action="{{ path('app_user_delete', {id: u.id}) }}" onsubmit="return confirm('Delete the account for {{ u.name|e('js') }}? Their orders will be deleted too. This cannot be undone.');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ u.id) }}">
+                                        <button type="submit" class="btn-danger">Delete</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="empty-state">No accounts found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

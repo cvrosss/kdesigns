@@ -1,0 +1,14 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set active_nav = 'products' %}
+{% set page_overline = 'Records' %}
+{% set page_title = product ? 'Edit Product' : 'Add Product' %}
+
+{% block title %}{{ page_title }} · KDesigns{% endblock %}
+
+{% block body %}
+    {% if product and product.image %}
+        <p><img class="thumb-sm" src="/{{ product.image }}" alt="Current photo of {{ product.name }}"></p>
+    {% endif %}
+    {{ include('admin/_form_card.html.twig', {form: form, submit: product ? 'Save changes' : 'Save product', cancel: path('app_manage_products'), full: ['name', 'description', 'imageFile']}) }}
+{% endblock %}

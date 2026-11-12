@@ -21,7 +21,7 @@
     </div>
 
     <div class="table-card">
-        <table class="data-table">
+        <table class="data-table data-table--stack">
             <thead>
                 <tr>
                     <th>Product</th>
@@ -36,7 +36,7 @@
                 {% for row in products %}
                     {% set level = row.stock <= 0 ? 'out' : (row.stock <= low_stock_threshold ? 'low' : 'ok') %}
                     <tr>
-                        <td>
+                        <td data-label="">
                             <div class="product">
                                 <div class="product__thumb" aria-hidden="true">{% if row.image %}<img src="/{{ row.image }}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:inherit" onerror="this.hidden=true">{% endif %}</div>
                                 <div>
@@ -45,10 +45,10 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="cell-category">{{ row.category }}</td>
-                        <td class="cell-price">₱{{ row.price|number_format }}</td>
-                        <td class="cell-stock cell-stock--{{ level }}">{{ row.stock }}</td>
-                        <td>
+                        <td class="cell-category" data-label="Category">{{ row.category }}</td>
+                        <td class="cell-price" data-label="Price">₱{{ row.price|number_format }}</td>
+                        <td class="cell-stock cell-stock--{{ level }}" data-label="Stock">{{ row.stock }}</td>
+                        <td data-label="Status">
                             {% if level == 'out' %}
                                 <span class="status status--out">Out of stock</span>
                             {% elseif level == 'low' %}
@@ -57,7 +57,7 @@
                                 <span class="status status--ok">{{ row.stock }} in stock</span>
                             {% endif %}
                         </td>
-                        <td>
+                        <td data-label="Restock">
                             <form class="restock" method="post" action="{{ path('app_inventory_stock', {id: row.id, filter: active_filter}) }}" onsubmit="this.querySelector('button').disabled = true">
                                 <input type="hidden" name="_token" value="{{ csrf_token('stock_' ~ row.id) }}">
                                 <input type="hidden" name="request_id" value="{{ row.restock_key }}">

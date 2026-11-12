@@ -1,0 +1,23 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set active_nav = 'account' %}
+{% set page_overline = 'Account' %}
+{% set page_title = 'My Account' %}
+
+{% block title %}My Account · KDesigns{% endblock %}
+
+{% block body %}
+    <div class="profile">
+        <section class="table-card">
+            <h2 class="table-card__title">Profile</h2>
+            <dl>
+                <dt>Name</dt><dd>{{ user.name }}</dd>
+                <dt>Email</dt><dd>{{ user.email }}</dd>
+                <dt>Role</dt><dd>{{ is_granted('ROLE_ADMIN') ? 'Admin' : (is_granted('ROLE_STAFF') ? 'Staff' : 'Customer') }}</dd>
+                <dt>Member since</dt><dd>{{ user.createdAt|date('M j, Y') }}</dd>
+            </dl>
+        </section>
+
+        {{ include('admin/_form_card.html.twig', {form: form, title: 'Change password', submit: 'Update password', full: ['currentPassword', 'newPassword']}) }}
+    </div>
+{% endblock %}

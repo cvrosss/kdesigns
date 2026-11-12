@@ -1,20 +1,28 @@
+{# Menu items are filtered by role: staff only see their own tools, admins see everything. #}
 {% set nav = [
-    {key: 'overview', label: 'Overview', icon: '◈', route: 'app_overview'},
-    {key: 'orders', label: 'Orders', icon: '🧾', route: 'app_orders'},
-    {key: 'inventory', label: 'Inventory', icon: '📦', route: 'app_inventory'},
-    {key: 'buyers', label: 'Buyers History', icon: '👥', route: 'app_buyers_history'},
-    {key: 'feedback', label: 'Feedback', icon: '💬', route: 'app_admin_feedback'},
+    {key: 'overview', label: 'Overview', icon: '◈', route: 'app_overview', role: 'ROLE_ADMIN'},
+    {key: 'orders', label: 'Orders', icon: '🧾', route: 'app_orders', role: 'ROLE_ADMIN'},
+    {key: 'inventory', label: 'Inventory', icon: '📦', route: 'app_inventory', role: 'ROLE_ADMIN'},
+    {key: 'products', label: 'Products', icon: '🌸', route: 'app_manage_products', role: 'ROLE_STAFF'},
+    {key: 'categories', label: 'Categories', icon: '🏷️', route: 'app_category_index', role: 'ROLE_STAFF'},
+    {key: 'users', label: 'Users', icon: '🔑', route: 'app_user_index', role: 'ROLE_ADMIN'},
+    {key: 'buyers', label: 'Buyers History', icon: '👥', route: 'app_buyers_history', role: 'ROLE_ADMIN'},
+    {key: 'feedback', label: 'Feedback', icon: '💬', route: 'app_admin_feedback', role: 'ROLE_ADMIN'},
+    {key: 'account', label: 'My Account', icon: '👤', route: 'app_account', role: 'ROLE_USER'},
 ] %}
 
 <aside class="sidebar">
     <div class="sidebar__brand">
-        <span class="sidebar__eyebrow">Admin Panel</span>
-        <span class="sidebar__logo">KDesigns</span>
-        <span class="sidebar__tagline">Blooms &amp; Styles</span>
+        <span class="sidebar__eyebrow">{{ is_granted('ROLE_ADMIN') ? 'Admin Panel' : 'Staff Panel' }}</span>
+        <img src="/images/logo-white.png" alt="KDesigns Blooms and style" class="sidebar__logo" width="384" height="151">
     </div>
 
-    <nav class="sidebar__nav" aria-label="Admin navigation">
-        {% for item in nav %}
+    <button type="button" class="sidebar__toggle" data-admin-toggle aria-controls="admin-menu" aria-expanded="false" aria-label="Open menu">
+        <span class="sidebar__bars" aria-hidden="true"><span></span><span></span><span></span></span>
+    </button>
+
+    <nav class="sidebar__nav" id="admin-menu" aria-label="{{ is_granted('ROLE_ADMIN') ? 'Admin' : 'Staff' }} navigation">
+        {% for item in nav|filter(i => is_granted(i.role)) %}
             {% set badge = nav_badges[item.key]|default(0) %}
             <a href="{{ path(item.route) }}"
                class="sidebar__link{{ item.key == active ? ' is-active' : '' }}"
@@ -28,5 +36,6 @@
 
     <div class="sidebar__footer">
         <a href="{{ path('app_home') }}" class="sidebar__back">← Back to Site</a>
+        <a href="{{ logout_path() }}" class="sidebar__back">Log Out</a>
     </div>
 </aside>

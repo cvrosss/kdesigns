@@ -1,0 +1,74 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set active_nav = 'products' %}
+{% set page_overline = 'Records' %}
+{% set page_title = 'Products' %}
+
+{% block title %}Products · KDesigns{% endblock %}
+
+{% block body %}
+    <div class="filters">
+        <form class="search" method="get" action="{{ path('app_manage_products') }}" role="search">
+            <input type="search" name="q" value="{{ term }}" placeholder="Search name or category" aria-label="Search products">
+            <select name="category" aria-label="Filter by category">
+                <option value="">All categories</option>
+                {% for c in categories %}
+                    <option value="{{ c.id }}"{{ category_id == c.id ? ' selected' : '' }}>{{ c.categoryname }}</option>
+                {% endfor %}
+            </select>
+            <select name="scope" aria-label="Which products">
+                <option value="all"{{ scope == 'all' ? ' selected' : '' }}>All products</option>
+                <option value="mine"{{ scope == 'mine' ? ' selected' : '' }}>Added by me</option>
+            </select>
+            <button type="submit" class="btn-filter">Search</button>
+            {% if term or category_id or scope == 'mine' %}<a href="{{ path('app_manage_products') }}" class="btn-filter">Clear</a>{% endif %}
+        </form>
+        <div class="filters__group">
+            <span class="filters__count">{{ products|length }} of {{ total }} products</span>
+            <a href="{{ path('app_manage_product_new') }}" class="btn-save">+ Add Product</a>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <table class="data-table data-table--stack">
+            <thead>
+                <tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Added by</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for p in products %}
+                    <tr>
+                        <td data-label="">
+                            <div class="product">
+                                <div class="product__thumb" aria-hidden="true">{% if p.image %}<img src="/{{ p.image }}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:inherit" onerror="this.hidden=true">{% endif %}</div>
+                                <div>
+                                    <div class="product__name">{{ p.name }}</div>
+                                    {% if p.badge %}<span class="product__tag">{{ p.badge }}</span>{% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="cell-category" data-label="Category">{{ p.category.categoryname }}</td>
+                        <td class="cell-price" data-label="Price">₱{{ p.price|number_format }}</td>
+                        <td data-label="Stock" class="cell-stock cell-stock--{{ p.stock <= 0 ? 'out' : (p.stock <= 5 ? 'low' : 'ok') }}">{{ p.stock }}</td>
+                        <td data-label="Added by">{% if p.createdBy %}{{ p.createdBy.name }}{% if p.createdBy.id == app.user.id %} <span class="muted">(you)</span>{% endif %}{% else %}<span class="muted">Shop catalog</span>{% endif %}</td>
+                        <td data-label="">
+                            <div class="row-actions">
+                                {% if is_granted('PRODUCT_EDIT', p) %}
+                                    <a href="{{ path('app_manage_product_edit', {id: p.id}) }}" class="btn-filter">Edit</a>
+                                {% endif %}
+                                {% if is_granted('PRODUCT_DELETE', p) %}
+                                    <form method="post" action="{{ path('app_manage_product_delete', {id: p.id}) }}" onsubmit="return confirm('Delete {{ p.name|e('js') }}? This cannot be undone.');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_product_' ~ p.id) }}">
+                                        <button type="submit" class="btn-danger">Delete</button>
+                                    </form>
+                                {% endif %}
+                                {% if not is_granted('PRODUCT_EDIT', p) %}<span class="muted">View only</span>{% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="empty-state">No products found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

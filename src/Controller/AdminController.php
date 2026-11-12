@@ -5,10 +5,12 @@ namespace App\Controller;
 use App\Entity\Feedback;
 use App\Entity\Order;
 use App\Entity\Product;
+use App\Entity\User;
 use App\Form\ProductType;
 use App\Repository\FeedbackRepository;
 use App\Repository\OrderRepository;
 use App\Repository\ProductRepository;
+use App\Repository\UserRepository;
 use App\Service\InsufficientStockException;
 use App\Service\OrderService;
 use App\Service\ProductImageUploader;
@@ -28,7 +30,12 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 final class AdminController extends AbstractController
 {
-    public const LOW_STOCK_THRESHOLD = 5;
+    /**
+     * The dashboard warns earlier than the storefront badge does: by the time a shopper sees
+     * "Only 3 left", the shop should already have been restocking. Derived from the
+     * storefront's threshold so the two can never drift apart silently.
+     */
+    public const LOW_STOCK_THRESHOLD = Product::LOW_STOCK_THRESHOLD + 2;
 
     private const RESTOCK_KEYS_SESSION = 'restock_keys';
 
@@ -36,6 +43,7 @@ final class AdminController extends AbstractController
         private readonly OrderRepository $orders,
         private readonly ProductRepository $products,
         private readonly OrderService $orderService,
+        private readonly UserRepository $users,
     ) {
     }
 
@@ -53,6 +61,10 @@ final class AdminController extends AbstractController
                 'active_products' => $this->products->countActive(),
                 'total_products' => $this->products->count([]),
                 'total_buyers' => $this->orders->countBuyers(),
+                'total_users' => $this->users->countAll(),
+                'total_staff' => $this->users->countByRole(User::ROLE_STAFF),
+                'total_admins' => $this->users->countByRole(User::ROLE_ADMIN),
+                'total_customers' => $this->users->countByRole(User::ROLE_CUSTOMER),
             ],
             'recent_orders' => array_map($this->orderRow(...), $this->orders->findAllWithUser(5)),
             'stock_alerts' => array_map(static fn (Product $p) => [
@@ -129,6 +141,8 @@ final class AdminController extends AbstractController
 
         $product->setImage($uploader->upload($form->get('imageFile')->getData(), $product->getName()));
         $product->setSortOrder($this->products->nextSortOrder());
+        $creator = $this->getUser();
+        $product->setCreatedBy($creator instanceof User ? $creator : null);
         $em->persist($product);
         $em->flush();
 

@@ -23,6 +23,12 @@ class OrderRepository extends ServiceEntityRepository
         return $this->findBy(['user' => $user], ['createdAt' => 'DESC', 'id' => 'DESC']);
     }
 
+    /** How many orders this account has placed. */
+    public function countForUser(User $user): int
+    {
+        return $this->count(['user' => $user]);
+    }
+
     /** @return list<Order> newest first, with buyers loaded */
     public function findAllWithUser(?int $limit = null): array
     {
@@ -91,9 +97,18 @@ class OrderRepository extends ServiceEntityRepository
             ->getQuery()
             ->getArrayResult();
 
+        // The product names are collected with a second grouped query rather than by loading
+        // every order in the shop into memory, which is what this used to do.
         $items = [];
-        foreach ($this->findAllWithUser() as $order) {
-            $items[$order->getUser()->getId()][] = $order->getProductName();
+        $names = $this->createQueryBuilder('o')
+            ->select('IDENTITY(o.user) AS buyer, o.productName AS name')
+            ->distinct()
+            ->orderBy('o.productName', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        foreach ($names as $row) {
+            $items[(int) $row['buyer']][] = $row['name'];
         }
 
         return array_map(static fn (array $r) => [

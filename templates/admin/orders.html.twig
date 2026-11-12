@@ -17,7 +17,7 @@
     </div>
 
     <div class="table-card">
-        <table class="data-table">
+        <table class="data-table data-table--stack">
             <thead>
                 <tr>
                     <th>Order ID</th>
@@ -33,13 +33,13 @@
             <tbody>
                 {% for order in orders %}
                     <tr>
-                        <td class="mono mono--strong">{{ order.id }}</td>
-                        <td class="row-title row-title--lg">{{ order.customer }}</td>
-                        <td class="cell-muted">{{ order.email }}</td>
-                        <td class="cell-items">{% for item in order.items %}<div>{{ item }}</div>{% endfor %}</td>
-                        <td class="cell-price">₱{{ order.total|number_format }}</td>
-                        <td><span class="status status--{{ order.status }}">{{ order.status|order_status }}</span></td>
-                        <td>
+                        <td class="mono mono--strong" data-label="Order ID">{{ order.id }}</td>
+                        <td class="row-title row-title--lg" data-label="Customer">{{ order.customer }}</td>
+                        <td class="cell-muted" data-label="Email">{{ order.email }}</td>
+                        <td class="cell-items" data-label="Items">{% for item in order.items %}<div>{{ item }}</div>{% endfor %}</td>
+                        <td class="cell-price" data-label="Total">₱{{ order.total|number_format }}</td>
+                        <td data-label="Status"><span class="status status--{{ order.status }}">{{ order.status|order_status }}</span></td>
+                        <td data-label="Update status">
                             <form method="post" action="{{ path('app_order_status', {reference: order.id, status: active_status}) }}" class="restock">
                                 <input type="hidden" name="_token" value="{{ csrf_token('order_status_' ~ order.id) }}">
                                 <select name="status" class="select" aria-label="Update status for {{ order.id }}" onchange="this.form.requestSubmit()">
@@ -50,7 +50,7 @@
                                 <noscript><button type="submit" class="btn-save">Save</button></noscript>
                             </form>
                         </td>
-                        <td class="cell-muted">{{ order.date }}</td>
+                        <td class="cell-muted" data-label="Date">{{ order.date }}</td>
                     </tr>
                 {% else %}
                     <tr><td colspan="8" class="empty-state">No orders found.</td></tr>

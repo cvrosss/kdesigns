@@ -1,0 +1,18 @@
+{# Admin form layout. Variables: form, submit (button label), cancel (url), full (field names that span both columns). #}
+{{ form_start(form, {attr: {class: 'form-card', novalidate: 'novalidate'}}) }}
+    {% if title|default(null) %}<h2 class="form-card__title">{{ title }}</h2>{% endif %}
+    {% if form.vars.errors|length %}<div class="form-card__grid"><div class="field--full">{{ form_errors(form) }}</div></div>{% endif %}
+    <div class="form-card__grid">
+        {% for child in form|filter(c => c.vars.name != "_token") %}
+            {% set is_check = 'checkbox' in child.vars.block_prefixes %}
+            <div class="field{{ child.vars.name in full|default([]) ? ' field--full' : '' }}{{ is_check ? ' field--check' : '' }}">
+                {{ form_row(child) }}
+            </div>
+        {% endfor %}
+    </div>
+    <div class="form-card__foot">
+        {% if cancel|default(null) %}<a href="{{ cancel }}" class="btn-filter">Cancel</a>{% endif %}
+        <button type="submit" class="btn-save">{{ submit|default('Save') }}</button>
+    </div>
+    {{ form_rest(form) }}
+{{ form_end(form, {render_rest: false}) }}

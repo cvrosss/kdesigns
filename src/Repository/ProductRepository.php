@@ -169,6 +169,17 @@ class ProductRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    /** How many products still point at this stored photo (0 means the file can be deleted). */
+    public function countByImage(string $image): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->andWhere('p.image = :image')
+            ->setParameter('image', $image)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function countActive(): int
     {
         return (int) $this->createQueryBuilder('p')

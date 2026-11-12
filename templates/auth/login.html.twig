@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Log In · {{ studio.full_name }}{% endblock %}
+
+{# Landing page for anonymous visitors who open a protected URL (see Security/LoginEntryPoint).
+   It has no form of its own: it opens the site's shared log-in dialog straight away. #}
+
+{# Landing page for anonymous visitors who open a protected URL (see App\Security\LoginEntryPoint).
+   It has no form of its own: it opens the site's shared log-in dialog straight away. #}
+{% block body %}
+    <section class="container" style="min-height:55vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:60px 16px">
+        <h1 style="margin:0;font-family:var(--serif, 'Playfair Display', serif)">Please log in</h1>
+        <p style="margin:0;color:#6f655b">Log in to continue to your account, the staff panel or the admin dashboard.</p>
+        <button type="button" class="btn btn--primary" data-auth-open="login">Log In</button>
+    </section>
+    <script>
+        // Open the existing log-in dialog as soon as the storefront script has loaded.
+        window.addEventListener('load', function () {
+            document.dispatchEvent(new CustomEvent('auth:request', { detail: { tab: 'login', notice: 'Log in to continue.' } }));
+        });
+    </script>
+{% endblock %}

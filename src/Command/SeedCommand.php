@@ -26,7 +26,7 @@ final class SeedCommand extends Command
     private const CATEGORIES = [
         'fresh-bouquet' => 'Fresh Bouquet',
         'dried-bouquet' => 'Dried Bouquet',
-        'bloom-box' => 'Bloom Box',
+        'basket-bouquet' => 'Basket Bouquet',
         'glass-dome' => 'Glass Dome',
         'others' => 'Others',
     ];
@@ -45,7 +45,10 @@ final class SeedCommand extends Command
         $this
             ->addOption('admin-email', null, InputOption::VALUE_REQUIRED, 'Login identifier of the admin account (an email, or a plain username like "admin")')
             ->addOption('admin-name', null, InputOption::VALUE_REQUIRED, 'Display name for a new admin', 'KDesigns Admin')
-            ->addOption('admin-password', null, InputOption::VALUE_REQUIRED, 'Admin password, hashed before storing. Sets/changes it; if omitted a NEW admin gets a random one (printed once)');
+            ->addOption('admin-password', null, InputOption::VALUE_REQUIRED, 'Admin password, hashed before storing. Sets/changes it; if omitted a NEW admin gets a random one (printed once)')
+            ->addOption('staff-email', null, InputOption::VALUE_REQUIRED, 'Email of a staff account to create (ROLE_STAFF)')
+            ->addOption('staff-name', null, InputOption::VALUE_REQUIRED, 'Display name for a new staff account', 'KDesigns Staff')
+            ->addOption('staff-password', null, InputOption::VALUE_REQUIRED, 'Staff password; if omitted a NEW account gets a random one (printed once)');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -86,24 +89,28 @@ final class SeedCommand extends Command
         $io->success(sprintf('Catalog ready: %d new product(s), %d new review(s).', $created, $reviews));
 
         if (null !== ($email = $input->getOption('admin-email'))) {
-            $this->ensureAdmin($io, mb_strtolower(trim($email)), (string) $input->getOption('admin-name'), $input->getOption('admin-password'));
+            $this->ensureAccount($io, 'ROLE_ADMIN', mb_strtolower(trim($email)), (string) $input->getOption('admin-name'), $input->getOption('admin-password'));
+        }
+        if (null !== ($email = $input->getOption('staff-email'))) {
+            $this->ensureAccount($io, 'ROLE_STAFF', mb_strtolower(trim($email)), (string) $input->getOption('staff-name'), $input->getOption('staff-password'));
         }
 
         return Command::SUCCESS;
     }
 
-    private function ensureAdmin(SymfonyStyle $io, string $email, string $name, ?string $password): void
+    private function ensureAccount(SymfonyStyle $io, string $role, string $email, string $name, ?string $password): void
     {
+        $label = 'ROLE_ADMIN' === $role ? 'admin' : 'staff';
         $user = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
 
         if (null !== $user) {
-            $user->setRoles(array_values(array_unique([...$user->getRoles(), 'ROLE_ADMIN'])));
+            $user->setPrimaryRole($role);
             $changed = null !== $password && '' !== $password;
             if ($changed) {
                 $user->setPassword($this->hasher->hashPassword($user, $password));
             }
             $this->em->flush();
-            $io->success(sprintf('%s is an admin (password %s).', $email, $changed ? 'updated' : 'unchanged'));
+            $io->success(sprintf('%s is %s (password %s).', $email, $label, $changed ? 'updated' : 'unchanged'));
 
             return;
         }
@@ -111,12 +118,12 @@ final class SeedCommand extends Command
         $generated = null === $password || '' === $password;
         $password = $generated ? bin2hex(random_bytes(9)) : $password;
 
-        $user = (new User())->setEmail($email)->setName($name)->setRoles(['ROLE_ADMIN']);
+        $user = (new User())->setEmail($email)->setName($name)->setPrimaryRole($role);
         $user->setPassword($this->hasher->hashPassword($user, $password));
         $this->em->persist($user);
         $this->em->flush();
 
-        $io->success(sprintf('Admin %s created.', $email));
+        $io->success(sprintf('%s account %s created.', ucfirst($label), $email));
         if ($generated) {
             $io->warning('Generated password (shown once): '.$password);
         }
@@ -138,10 +145,18 @@ final class SeedCommand extends Command
             ['Lavender Dreams Bundle', 'dried-bouquet', 'Fragrant dried lavender bundles, perfect for home décor or gifts.', 980, 15, null, $img('lavender-dreams-bundle')],
             ['Tropical Bloom Arrangement', 'dried-bouquet', 'Bold heliconias, anthuriums, and tropical foliage in an architectural composition.', 3200, 4, 'New', $img('tropical-bloom-arrangement')],
             ['Bridal White Cascade', 'dried-bouquet', 'All-white cascading bridal bouquet with garden roses, stephanotis, and lily of the valley.', 4800, 2, 'Luxury', $img('bridal-white-cascade')],
-            ['Autumn Harvest Wreath', 'dried-bouquet', 'Dried autumn botanicals including protea, cotton, and seed pods on a natural base.', 1600, 0, null, $img('autumn-harvest-wreath')],
-            ['Bloom Arrangement No. 10', 'bloom-box', self::GENERIC, 1400, 10, null, $img('bloom-arrangement-10')],
-            ['Bloom Arrangement No. 11', 'others', self::GENERIC, 1400, 10, null, $img('bloom-arrangement-11')],
-            ['Bloom Arrangement No. 12', 'glass-dome', self::GENERIC, 1400, 10, null, $img('bloom-arrangement-12')],
+            ['Citrus Sunrise Basket', 'basket-bouquet', 'A rustic woven basket arrangement featuring a prominent yellow lily, a bright orange rose, and textured green and yellow blooms. The design is finished with delicate filler flowers, eucalyptus leaves, and a branded KDesigns tag.', 2200, 5, null, $img('citrus-sunrise-basket')],
+            ['Spring Elegance Basket', 'basket-bouquet', 'A round woven basket tied with a branded ribbon, highlighting a bold yellow lily and a bright pink gerbera daisy. The arrangement is complemented by coral carnations, soft pink blooms, and tall eucalyptus stems that provide height and structure.', 2400, 5, null, $img('spring-elegance-basket')],
+            ['Soft Blush Meadow Basket', 'basket-bouquet', 'Presented in a handled woven basket tied with a white satin ribbon, this romantic arrangement is packed with pink gerbera daisies and crisp white flowers. It is softened with abundant baby\'s breath and fresh green accents.', 2800, 5, null, $img('soft-blush-meadow-basket')],
+            ['Stargazer Pastel Basket', 'basket-bouquet', 'Set in a unique footed rectangular basket wrapped in a branded ribbon, this display centers around a striking pink stargazer lily. The lily is surrounded by a pastel mix of soft pink carnations, pale yellow flowers, delicate light blue accents, and baby\'s breath.', 3200, 5, null, $img('stargazer-pastel-basket')],
+            ['Serenade Bloom Box', 'others', 'A chic white cylindrical box arrangement featuring a prominent yellow lily and a soft purple rose, delicately accented with white filler flowers and tall greenery.', 1500, 5, null, $img('serenade-bloom-box')],
+            ['Floral Stand', 'others', 'A grand, multi-tiered standing arrangement bursting with colorful mixed blooms and lush tropical greenery. Draped with custom ribbons for personalized messages, this large display is ideal for inaugurations, grand openings, or formal tributes.', 3000, 5, null, $img('floral-stand')],
+            ['Lavender Dreams Preserved Dome', 'glass-dome', 'A delicate preserved rose in a soft lilac hue, nestled amongst vibrant purple textural foliage and mixed dried florals, enclosed in a clear glass dome on a wooden base.', 1800, 5, null, $img('lavender-dreams-preserved-dome')],
+            ['Crimson & Snow Preserved Dome', 'glass-dome', 'A striking contrast featuring a pristine white preserved rose surrounded by bold red dried foliage and delicate white filler flowers, beautifully presented in a glass dome.', 2100, 5, null, $img('crimson-snow-preserved-dome')],
+            ['Natural Elegance Preserved Dome', 'glass-dome', 'An understated and elegant arrangement featuring two white preserved roses set against a backdrop of neutral, earthy dried grasses, wheat, and soft beige foliage, all within a classic glass dome.', 3000, 5, null, $img('natural-elegance-preserved-dome')],
+            ['Rose Quartz Preserved Dome', 'glass-dome', 'A romantic design showcasing a single white preserved rose enhanced with vibrant pink dried accents, soft pink petals at the base, and fluffy textures, preserved in a glass dome.', 3500, 5, null, $img('rose-quartz-preserved-dome')],
+            ['Sunflower Medallion Corsages', 'others', "A set of decorative corsages or medals featuring a central white flower surrounded by dried earthy blooms, baby's breath, and feathery accents. The arrangement rests on a bright yellow, flower-shaped base and hangs from a patterned golden-yellow ribbon. Priced per piece.", 450, 5, null, $img('sunflower-medallion-corsages')],
+            ['Spring Delight Gift Bag', 'others', "A lively arrangement presented in a pink, purse-style gift box with a branded KDesigns ribbon. It features a pastel palette including a prominent pink rose, light peach and yellow blooms, textured green button mums, delicate white Queen Anne's lace, eucalyptus leaves, and bright blue feathery filler.", 1200, 5, null, $img('spring-delight-gift-bag')],
         ];
     }
 

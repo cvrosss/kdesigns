@@ -35,6 +35,24 @@
         </div>
     </div>
 
+    <div class="kpis kpis--3">
+        <a class="kpi kpi--blue" href="{{ path('app_user_index') }}" style="text-decoration:none;color:inherit">
+            <span class="kpi__label">Total Users</span>
+            <span class="kpi__value">{{ stats.total_users }}</span>
+            <span class="kpi__note">{{ stats.total_admins }} admin · {{ stats.total_customers }} customers</span>
+        </a>
+        <a class="kpi kpi--green" href="{{ path('app_user_index', {role: 'ROLE_STAFF'}) }}" style="text-decoration:none;color:inherit">
+            <span class="kpi__label">Total Staff</span>
+            <span class="kpi__value">{{ stats.total_staff }}</span>
+            <span class="kpi__note">Staff accounts</span>
+        </a>
+        <a class="kpi kpi--pink" href="{{ path('app_manage_products') }}" style="text-decoration:none;color:inherit">
+            <span class="kpi__label">Total Records</span>
+            <span class="kpi__value">{{ stats.total_products }}</span>
+            <span class="kpi__note">Products</span>
+        </a>
+    </div>
+
     <div class="panels">
         <section class="panel">
             <header class="panel__head">

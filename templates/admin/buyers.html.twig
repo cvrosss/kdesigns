@@ -24,7 +24,7 @@
 
     <div class="table-card table-card--full">
         <h2 class="table-card__title">All Customers — sorted by total spend</h2>
-        <table class="data-table">
+        <table class="data-table data-table--stack">
             <thead>
                 <tr>
                     <th>#</th>
@@ -39,18 +39,18 @@
             <tbody>
                 {% for buyer in buyers %}
                     <tr>
-                        <td class="cell-rank">{% if loop.first %}<span class="star">★</span>{% else %}{{ loop.index }}{% endif %}</td>
-                        <td>
+                        <td class="cell-rank" data-label="#">{% if loop.first %}<span class="star">★</span>{% else %}{{ loop.index }}{% endif %}</td>
+                        <td data-label="Customer">
                             <div class="customer">
                                 <span class="avatar">{{ buyer.name|first|upper }}</span>
                                 <span class="row-title row-title--lg">{{ buyer.name }}</span>
                             </div>
                         </td>
-                        <td class="cell-muted">{{ buyer.email }}</td>
-                        <td class="cell-stock cell-stock--sm">{{ buyer.order_count }}</td>
-                        <td class="cell-items cell-items--sm">{% for item in buyer.items %}<div>{{ item }}</div>{% endfor %}</td>
-                        <td class="cell-price">₱{{ buyer.total_spent|number_format }}</td>
-                        <td class="cell-muted">{{ buyer.last_order|date('M j, Y') }}</td>
+                        <td class="cell-muted" data-label="Email">{{ buyer.email }}</td>
+                        <td class="cell-stock cell-stock--sm" data-label="Orders">{{ buyer.order_count }}</td>
+                        <td class="cell-items cell-items--sm" data-label="Items">{% for item in buyer.items %}<div>{{ item }}</div>{% endfor %}</td>
+                        <td class="cell-price" data-label="Total spent">₱{{ buyer.total_spent|number_format }}</td>
+                        <td class="cell-muted" data-label="Last order">{{ buyer.last_order|date('M j, Y') }}</td>
                     </tr>
                 {% else %}
                     <tr><td colspan="7" class="empty-state">No buyers yet.</td></tr>

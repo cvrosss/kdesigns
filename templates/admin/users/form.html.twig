@@ -1,0 +1,11 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set active_nav = 'users' %}
+{% set page_overline = 'Accounts' %}
+{% set page_title = user ? 'Edit User' : 'Add User' %}
+
+{% block title %}{{ page_title }} · KDesigns Admin{% endblock %}
+
+{% block body %}
+    {{ include('admin/_form_card.html.twig', {form: form, submit: user ? 'Save changes' : 'Create account', cancel: path('app_user_index')}) }}
+{% endblock %}

@@ -9,7 +9,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
         {% block stylesheets %}
-            <link rel="stylesheet" href="/css/admin.css">
+            <link rel="stylesheet" href="{{ asset_v('/css/admin.css') }}">
         {% endblock %}
 
         {% block javascripts %}
@@ -41,5 +41,7 @@
                 {{ include('admin/_footer.html.twig') }}
             </div>
         </div>
+        <script src="{{ asset_v('/js/admin-nav.js') }}" defer></script>
+        <script src="{{ asset_v('/js/password-toggle.js') }}" defer></script>
     </body>
 </html>
