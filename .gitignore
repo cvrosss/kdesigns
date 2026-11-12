@@ -8,3 +8,26 @@
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
+
+# Per-environment secrets: never committed.
+/.env.docker
+/.env.docker.prod
+
+# Editor/IDE settings are personal, not project configuration.
+/.vscode/
+
+# A stray Windows artifact created by a shell redirect to "nul".
+/nul
+
+# Abandoned nested Symfony skeleton (92 MB, has its own .git and vendor/).
+# Kept out of the repository; safe to delete from disk entirely.
+/configure/
+
+# Product photos are uploaded at runtime; only the seeded catalog belongs in git.
+# (Remove this line if you want uploaded photos versioned.)
+/public/images/products/*-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].*
+
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###
