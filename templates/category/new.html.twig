@@ -1,11 +1,11 @@
-{% extends 'base.html.twig' %}
+{% extends 'admin/base.html.twig' %}
 
-{% block title %}New Category{% endblock %}
+{% set active_nav = 'categories' %}
+{% set page_overline = 'Records' %}
+{% set page_title = 'Add Category' %}
+
+{% block title %}Add Category · KDesigns{% endblock %}
 
 {% block body %}
-    <h1>Create new Category</h1>
-
-    {{ include('category/_form.html.twig') }}
-
-    <a href="{{ path('app_category_index') }}">back to list</a>
+    {{ include('admin/_form_card.html.twig', {form: form, submit: 'Create category', cancel: path('app_category_index'), full: ['categoryname', 'description']}) }}
 {% endblock %}
