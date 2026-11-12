@@ -1,10 +1,12 @@
-# Enable stateless CSRF protection for forms and logins/logouts
+# Login and logout use stateless CSRF: they are verified by the same-origin (Origin/Referer)
+# check, which needs no session and no JavaScript.
+#
+# Forms deliberately do NOT use it. The stateless form token is a placeholder that a
+# `csrf-protection` Stimulus controller is meant to fill in from a cookie, and this project
+# ships no Stimulus bundle — so every admin form was relying on the Origin header alone, and
+# would start rejecting every submission behind a proxy that strips it. Classic session-bound
+# tokens are rendered server-side, work without JavaScript, and are checked per form.
 framework:
-    form:
-        csrf_protection:
-            token_id: submit
-
     csrf_protection:
         stateless_token_ids:
-            - submit
             - authenticate

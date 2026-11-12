@@ -25,12 +25,19 @@ security:
             provider: app_user_provider
             user_checker: App\Security\UserChecker
             entry_point: App\Security\LoginEntryPoint
+            access_denied_handler: App\Security\AccessDeniedHandler
 
             # The auth modal posts JSON to /login (see AuthController).
             json_login:
                 check_path: app_login
                 username_path: email
                 password_path: password
+
+            # Password guessing is rate limited per account and per client IP, so an
+            # admin password cannot be attacked at full speed over the internet.
+            login_throttling:
+                max_attempts: 5           # per minute, per username
+                interval: '1 minute'
             remember_me:
                 secret: '%kernel.secret%'
                 lifetime: 604800
@@ -45,6 +52,7 @@ security:
         - { path: ^/category, roles: ROLE_STAFF }
         - { path: ^/manage, roles: ROLE_STAFF }
         - { path: ^/account, roles: ROLE_USER }
+        - { path: ^/my-orders, roles: ROLE_USER }
 
 when@test:
     security:
