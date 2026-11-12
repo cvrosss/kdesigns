@@ -28,7 +28,8 @@ final class HomeController extends AbstractController
     public function index(): Response
     {
         return $this->render('home/index.html.twig', [
-            'products' => $this->catalog->findAll(),
+            // The landing page keeps its curated highlight reel; /catalog lists the full shop.
+            'products' => $this->catalog->findAll(curated: true),
             'categories' => $this->catalog->getCategories(),
             'active_category' => null,
             'testimonials' => $this->testimonials->findAll(),

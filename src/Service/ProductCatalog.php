@@ -23,16 +23,22 @@ final class ProductCatalog
     }
 
     /**
+     * Products for the storefront.
+     *
+     * $curated is the landing page's three-row highlight reel. The catalog page passes false and
+     * gets the whole shop, so a product staff have just added is always reachable there — it used
+     * to be dropped by the curated slice and only appear under its own category filter.
+     *
      * @return list<array<string, mixed>>
      */
-    public function findAll(?string $categorySlug = null): array
+    public function findAll(?string $categorySlug = null, bool $curated = false): array
     {
         if (null !== $categorySlug && !isset($this->getCategories()[$categorySlug])) {
             $categorySlug = null;
         }
 
         $products = $this->products->findCatalog($categorySlug);
-        if (null === $categorySlug) {
+        if ($curated && null === $categorySlug) {
             $products = $this->arrangeAll($products);
         }
 
@@ -40,8 +46,8 @@ final class ProductCatalog
     }
 
     /**
-     * The "All" view is a curated three-row selection; every product is still listed under its own
-     * category filter. A product not in the leading rows or the featured row only shows under its category.
+     * The landing page's three-row selection: the leading products in display order, then the
+     * featured row. Used only there — the catalog page lists every product.
      *
      * @param list<Product> $products in display order
      *
