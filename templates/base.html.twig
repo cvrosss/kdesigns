@@ -9,7 +9,11 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&display=swap" rel="stylesheet">
         {% block stylesheets %}
-            <link rel="stylesheet" href="/css/storefront.css">
+            {# Utility classes used by the order modal and cart drawer. Generated once from
+               tailwind.config.js (see that file); the storefront's own styles load after it. #}
+            <link rel="stylesheet" href="{{ asset_v('/css/tailwind.css') }}">
+            <link rel="stylesheet" href="{{ asset_v('/css/storefront.css') }}">
+            <link rel="stylesheet" href="{{ asset_v('/css/zoom.css') }}">
         {% endblock %}
     </head>
     <body{{ app.user ? ' data-authenticated' : '' }}>
@@ -20,10 +24,10 @@
             {% block body %}{% endblock %}
         </main>
 
-        {% if is_granted('ROLE_ADMIN') %}
-            <a href="{{ path('app_overview') }}" class="dashboard-fab">
+        {% if is_granted('ROLE_STAFF') %}
+            <a href="{{ is_granted('ROLE_ADMIN') ? path('app_overview') : path('app_manage_products') }}" class="dashboard-fab">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 12l4-4"/><path d="M7.5 16.5a6 6 0 0 1 0-9"/></svg>
-                Dashboard
+                {{ is_granted('ROLE_ADMIN') ? 'Dashboard' : 'Staff Panel' }}
             </a>
         {% endif %}
 
@@ -31,28 +35,10 @@
         {{ include('partials/_auth_modal.html.twig') }}
         {{ include('partials/_order_modal.html.twig') }}
         {{ include('partials/_cart_drawer.html.twig') }}
-
-        {# Utility classes are used by the order modal only; preflight is off so the storefront's own styles are untouched. #}
-        <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-        <script>
-            tailwind.config = {
-                corePlugins: { preflight: false },
-                theme: {
-                    extend: {
-                        colors: {
-                            ink: '#1a1a1a', muted: '#6f655b', surface: '#faf6f0', 'cream-dark': '#ede5d8',
-                            burgundy: { DEFAULT: '#5c0f12', dark: '#4a0c0f' },
-                            rose: { DEFAULT: '#c46d7a', dark: '#b85b69' },
-                            red: '#b42318'
-                        },
-                        fontFamily: { serif: ['Playfair Display', 'Georgia', 'serif'], sans: ['Inter', 'system-ui', 'sans-serif'] }
-                    }
-                }
-            };
-        </script>
+        {{ include('partials/_photo_zoom.html.twig') }}
 
         {% block javascripts %}
-            <script src="/js/storefront.js" defer></script>
+            <script src="{{ asset_v('/js/storefront.js') }}" defer></script>
         {% endblock %}
     </body>
 </html>

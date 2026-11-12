@@ -1,12 +1,12 @@
 {% set field_label = 'mb-2.5 block text-[11px] font-medium uppercase tracking-[.12em] text-[#6b5a4c]' %}
-{% set field_input = 'block h-[46px] w-full rounded-[3px] border border-[#ddd0bd] bg-[#f3ece0] px-4 font-sans text-[15px] text-ink placeholder:text-[#9a8f82] focus:bg-white focus:outline focus:outline-2 focus:outline-offset-1 focus:outline-burgundy aria-[invalid=true]:border-red' %}
-{% set method_btn = 'flex-1 cursor-pointer rounded-[3px] border border-[#ddd0bd] bg-surface px-4 py-[14px] font-sans text-[13px] font-semibold text-ink transition-colors hover:border-burgundy aria-pressed:border-burgundy aria-pressed:bg-burgundy aria-pressed:text-white' %}
-{% set btn_ghost = 'flex-1 cursor-pointer rounded-[3px] border border-[#ddd0bd] bg-surface px-6 py-[15px] font-sans text-[13px] font-bold uppercase tracking-[.08em] text-burgundy hover:border-burgundy' %}
-{% set btn_main = 'flex-[1.4] cursor-pointer rounded-[3px] border border-burgundy bg-burgundy px-6 py-[15px] font-sans text-[13px] font-bold uppercase tracking-[.08em] text-white hover:bg-burgundy-dark disabled:cursor-not-allowed disabled:border-[#d9ccb9] disabled:bg-[#d9ccb9] disabled:text-white/80' %}
-{% set error_box = 'mb-0 mt-4 rounded-[3px] bg-[#fbeceb] px-3 py-2.5 text-[13px] leading-normal text-red' %}
-{% set pay_btn = 'flex w-full cursor-pointer items-center gap-4 rounded-[3px] border border-[#ddd0bd] bg-white px-5 py-4 text-left font-sans text-ink transition-colors hover:border-burgundy aria-checked:border-burgundy aria-checked:shadow-[inset_0_0_0_1px_#5c0f12]' %}
+{% set field_input = 'block h-[46px] w-full rounded-xl border border-[#ddd0bd] bg-[#f3ece0] px-4 font-sans text-[15px] text-ink placeholder:text-[#9a8f82] focus:bg-white focus:outline focus:outline-2 focus:outline-offset-1 focus:outline-burgundy aria-[invalid=true]:border-red' %}
+{% set method_btn = 'flex-1 cursor-pointer rounded-full border border-[#ddd0bd] bg-surface px-4 py-[14px] font-sans text-[13px] font-semibold text-ink transition-colors hover:border-burgundy aria-pressed:border-burgundy aria-pressed:bg-burgundy aria-pressed:text-white' %}
+{% set btn_ghost = 'flex-1 cursor-pointer rounded-full border border-[#ddd0bd] bg-surface px-6 py-[15px] font-sans text-[13px] font-bold uppercase tracking-[.08em] text-burgundy hover:border-burgundy' %}
+{% set btn_main = 'flex-[1.4] cursor-pointer rounded-full border border-burgundy bg-burgundy px-6 py-[15px] font-sans text-[13px] font-bold uppercase tracking-[.08em] text-white hover:bg-burgundy-dark disabled:cursor-not-allowed disabled:border-[#d9ccb9] disabled:bg-[#d9ccb9] disabled:text-white/80' %}
+{% set error_box = 'mb-0 mt-4 rounded-lg bg-[#fbeceb] px-3 py-2.5 text-[13px] leading-normal text-red' %}
+{% set pay_btn = 'flex w-full cursor-pointer items-center gap-4 rounded-xl border border-[#ddd0bd] bg-white px-5 py-4 text-left font-sans text-ink transition-colors hover:border-burgundy aria-checked:border-burgundy aria-checked:shadow-[inset_0_0_0_1px_#5c0f12]' %}
 
-<dialog class="m-auto max-h-[calc(100vh-32px)] w-[min(440px,calc(100vw-32px))] overflow-auto rounded-md border-0 bg-surface p-0 text-ink shadow-[0_24px_64px_rgba(30,10,12,.35)] backdrop:bg-[rgba(30,14,16,.55)] backdrop:backdrop-blur-[2px]"
+<dialog class="m-auto max-h-[calc(100vh-32px)] w-[min(440px,calc(100vw-32px))] overflow-auto rounded-3xl border-0 bg-surface p-0 text-ink shadow-[0_24px_64px_rgba(30,10,12,.35)] backdrop:bg-[rgba(30,14,16,.55)] backdrop:backdrop-blur-[2px]"
         data-order data-order-timezone="{{ order_schedule.timezone }}" data-order-cutoff="{{ order_schedule.cutoff }}" aria-labelledby="order-title">
     <header class="relative bg-burgundy px-8 pb-6 pt-7 text-white">
         <p class="m-0 mb-2.5 text-[11px] font-semibold uppercase tracking-[.2em] text-white/50" data-order-overline>Place Order</p>
@@ -44,12 +44,12 @@
             <button type="button" class="{{ method_btn }}" data-order-method="Delivery" aria-pressed="false">🚚 Delivery</button>
         </div>
 
-        <div class="mt-4 rounded-[3px] border border-[#ddd0bd] bg-[#ede5d8] px-4 py-4 text-[14px]" data-order-delivery-summary hidden>
+        <div class="mt-4 rounded-xl border border-[#ddd0bd] bg-[#ede5d8] px-4 py-4 text-[14px]" data-order-delivery-summary hidden>
             <p class="m-0 mb-2.5 text-[11px] font-bold uppercase tracking-[.12em] text-burgundy">Delivery Details</p>
             <p class="m-0 mb-1.5"><span aria-hidden="true">👤</span> <span data-summary-receiver></span></p>
             <p class="m-0 mb-1.5"><span aria-hidden="true">📞</span> <span data-summary-contact></span></p>
             <p class="m-0"><span aria-hidden="true">📍</span> <span data-summary-location></span></p>
-            <button type="button" class="mt-3 cursor-pointer rounded-[3px] border border-[#ddd0bd] bg-surface px-3 py-1.5 font-sans text-xs font-semibold text-burgundy hover:border-burgundy" data-order-edit-receiver>Edit Details</button>
+            <button type="button" class="mt-3 cursor-pointer rounded-full border border-[#ddd0bd] bg-surface px-3 py-1.5 font-sans text-xs font-semibold text-burgundy hover:border-burgundy" data-order-edit-receiver>Edit Details</button>
         </div>
 
         <p class="{{ error_box }}" role="alert" data-order-error hidden></p>
@@ -127,7 +127,7 @@
             <span class="font-serif text-lg font-bold">Total</span>
             <span class="font-serif text-2xl font-bold text-burgundy" data-receipt="total"></span>
         </div>
-        <p class="mb-0 mt-0 rounded-[3px] bg-[#ede5d8] px-4 py-3.5 text-center text-[13px] leading-normal text-muted">
+        <p class="mb-0 mt-0 rounded-xl bg-[#ede5d8] px-4 py-3.5 text-center text-[13px] leading-normal text-muted">
             Please send payment to the number/account above and use reference no. <strong class="text-ink" data-receipt="ref-note"></strong>. Our team will confirm once received.
         </p>
 

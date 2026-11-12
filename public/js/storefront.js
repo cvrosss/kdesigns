@@ -9,6 +9,38 @@
         navbar.classList.toggle('is-scrolled', window.scrollY > 40);
     }
 
+    // The navbar's height is fixed in CSS (--nav-height, per breakpoint). It used to be measured here and written
+    // back into that same variable, which the navbar's own height is built from: any one-off oversized reading
+    // (iOS Safari resizing as its toolbars collapse) was then locked in, leaving a bar hundreds of pixels tall.
+
+    // Hamburger menu (below 960px the links and account buttons live in a dropdown).
+    var toggle = navbar.querySelector('[data-nav-toggle]');
+    var menu = navbar.querySelector('[data-nav-menu]');
+
+    function setMenu(open) {
+        navbar.classList.toggle('is-open', open);
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        // Hidden menu items must not be reachable with the keyboard.
+        if (open || window.innerWidth > 960) { menu.removeAttribute('inert'); } else { menu.setAttribute('inert', ''); }
+    }
+
+    if (toggle && menu) {
+        setMenu(false);
+        toggle.addEventListener('click', function () { setMenu(!navbar.classList.contains('is-open')); });
+        // Choosing a link or button (including Log In) closes the menu.
+        menu.addEventListener('click', function (event) {
+            if (event.target.closest('a, button')) { setMenu(false); }
+        });
+        document.addEventListener('click', function (event) {
+            if (navbar.classList.contains('is-open') && !navbar.contains(event.target)) { setMenu(false); }
+        });
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && navbar.classList.contains('is-open')) { setMenu(false); toggle.focus(); }
+        });
+        window.addEventListener('resize', function () { setMenu(navbar.classList.contains('is-open') && window.innerWidth <= 960); });
+    }
+
     update();
     window.addEventListener('scroll', update, { passive: true });
 })();
@@ -17,8 +49,9 @@
 // live status. It is read-only: only an admin can change a status. Once an order is Successful, Delivered or
 // Cancelled it leaves the cart and is kept under My Orders, so the cart empties when everything is done.
 (function () {
-    var link = document.querySelector('[data-cart-link]');
-    var badge = document.querySelector('[data-cart-count]');
+    // The cart button exists twice (navbar bar on desktop, hamburger menu on phones); both stay in sync.
+    var links = document.querySelectorAll('[data-cart-link]');
+    var badges = document.querySelectorAll('[data-cart-count]');
     var drawer = document.querySelector('[data-cart]');
     var canDrawer = !!drawer && typeof drawer.showModal === 'function';
     var signedIn = document.body.hasAttribute('data-authenticated');
@@ -74,7 +107,7 @@
             var status = STATUSES[order.status] || { label: order.status, classes: 'bg-cream-dark text-muted' };
 
             var row = el('li', 'flex gap-4 border-b border-[#e3d9cb] px-7 py-5');
-            var img = el('img', 'h-16 w-16 flex-none rounded-[3px] bg-cream-dark object-cover');
+            var img = el('img', 'h-16 w-16 flex-none rounded-xl bg-cream-dark object-cover');
             img.src = order.image;
             img.alt = '';
             img.onerror = function () { img.hidden = true; };
@@ -100,12 +133,12 @@
 
     function render(orders) {
         var pending = orders.filter(function (o) { return o.status === 'pending'; }).length;
-        if (badge) {
+        badges.forEach(function (badge) {
             badge.textContent = pending > 0 ? String(pending) : '';
-        }
-        if (link) {
+        });
+        links.forEach(function (link) {
             link.setAttribute('aria-label', 'Orders, ' + pending + ' pending');
-        }
+        });
         renderDrawer(orders);
     }
 
@@ -139,7 +172,7 @@
     // A freshly confirmed order shows up in the list straight away.
     document.addEventListener('order:confirmed', load);
 
-    if (link) {
+    links.forEach(function (link) {
         link.addEventListener('click', function (event) {
             event.preventDefault();
             if (canDrawer && !drawer.open) {
@@ -148,7 +181,7 @@
                 startPolling();
             }
         });
-    }
+    });
 
     if (canDrawer) {
         drawer.addEventListener('close', stopPolling);
@@ -877,4 +910,159 @@
     });
 
     poll();
+})();
+
+// Photo viewer: tap a product photo to open it full screen. Pinch, double-tap, the +/- buttons or the mouse wheel
+// zoom it; drag moves it around once zoomed. Plain pointer events, so it behaves the same on iPhone, iPad and desktop.
+(function () {
+    var dialog = document.querySelector('[data-zoom-dialog]');
+    if (!dialog || typeof dialog.showModal !== 'function') { return; }
+
+    var stage = dialog.querySelector('[data-zoom-stage]');
+    var img = dialog.querySelector('[data-zoom-img]');
+    var caption = dialog.querySelector('[data-zoom-caption]');
+    var MIN = 1, MAX = 4, DOUBLE_TAP_SCALE = 2.5;
+    var scale = 1, x = 0, y = 0;
+    var pointers = {};            // pointerId -> {x, y}
+    var pinchStart = null;        // {dist, scale}
+    var tap = { time: 0, x: 0, y: 0, sx: 0, sy: 0, moved: false, downAt: 0 };
+
+    function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+    // Keep the picture from being dragged off screen: no panning at all unless it is larger than the stage.
+    function limit() {
+        var maxX = Math.max(0, (img.clientWidth * scale - stage.clientWidth) / 2);
+        var maxY = Math.max(0, (img.clientHeight * scale - stage.clientHeight) / 2);
+        x = clamp(x, -maxX, maxX);
+        y = clamp(y, -maxY, maxY);
+    }
+
+    function apply() {
+        limit();
+        img.style.transform = 'translate(' + x + 'px,' + y + 'px) scale(' + scale + ')';
+        dialog.classList.toggle('is-zoomed', scale > 1.01);
+    }
+
+    function setScale(next, centerX, centerY) {
+        var prev = scale;
+        scale = clamp(next, MIN, MAX);
+        // Zoom around the given point (pinch midpoint or tapped spot) rather than the picture's middle.
+        if (centerX !== undefined) {
+            var rect = stage.getBoundingClientRect();
+            var dx = centerX - (rect.left + rect.width / 2);
+            var dy = centerY - (rect.top + rect.height / 2);
+            x = dx - (dx - x) * (scale / prev);
+            y = dy - (dy - y) * (scale / prev);
+        }
+        if (scale === MIN) { x = 0; y = 0; }
+        apply();
+    }
+
+    function reset() { scale = 1; x = 0; y = 0; apply(); }
+
+    function open(src, title) {
+        reset();
+        img.src = src;
+        img.alt = title || '';
+        caption.textContent = title || '';
+        dialog.showModal();
+        document.documentElement.style.overflow = 'hidden';
+    }
+
+    dialog.addEventListener('close', function () {
+        document.documentElement.style.overflow = '';
+        pointers = {};
+        pinchStart = null;
+        img.removeAttribute('src');
+    });
+
+    document.addEventListener('click', function (event) {
+        var trigger = event.target.closest('[data-zoom]');
+        if (trigger) { open(trigger.getAttribute('data-zoom-src'), trigger.getAttribute('data-zoom-title')); }
+    });
+
+    dialog.querySelector('[data-zoom-close]').addEventListener('click', function () { dialog.close(); });
+    dialog.querySelector('[data-zoom-in]').addEventListener('click', function () { setScale(scale * 1.5); });
+    dialog.querySelector('[data-zoom-out]').addEventListener('click', function () { setScale(scale / 1.5); });
+    dialog.querySelector('[data-zoom-reset]').addEventListener('click', reset);
+
+    function pair() {
+        var ids = Object.keys(pointers);
+        return [pointers[ids[0]], pointers[ids[1]]];
+    }
+
+    function distance() {
+        var p = pair();
+        return Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
+    }
+
+    stage.addEventListener('pointerdown', function (event) {
+        stage.setPointerCapture(event.pointerId);
+        pointers[event.pointerId] = { x: event.clientX, y: event.clientY };
+        if (Object.keys(pointers).length === 2) {
+            pinchStart = { dist: distance(), scale: scale };
+            tap.moved = true;
+        } else {
+            tap.moved = false;
+            tap.downAt = Date.now();
+            tap.sx = event.clientX;
+            tap.sy = event.clientY;
+        }
+    });
+
+    stage.addEventListener('pointermove', function (event) {
+        var p = pointers[event.pointerId];
+        if (!p) { return; }
+        var dx = event.clientX - p.x, dy = event.clientY - p.y;
+        p.x = event.clientX;
+        p.y = event.clientY;
+
+        if (Object.keys(pointers).length === 2 && pinchStart) {
+            var pts = pair();
+            setScale(pinchStart.scale * (distance() / pinchStart.dist), (pts[0].x + pts[1].x) / 2, (pts[0].y + pts[1].y) / 2);
+        } else if (scale > 1) {
+            x += dx;
+            y += dy;
+            apply();
+        }
+        if (Math.hypot(event.clientX - tap.sx, event.clientY - tap.sy) > 10) { tap.moved = true; }
+    });
+
+    function end(event) {
+        if (!pointers[event.pointerId]) { return; }
+        delete pointers[event.pointerId];
+        pinchStart = null;
+
+        // A quick, still tap; two close together toggle between fit and zoomed in.
+        if (event.type === 'pointerup' && !tap.moved && Date.now() - tap.downAt < 300) {
+            var now = Date.now();
+            if (now - tap.time < 320 && Math.hypot(event.clientX - tap.x, event.clientY - tap.y) < 30) {
+                if (scale > 1.01) { reset(); } else { setScale(DOUBLE_TAP_SCALE, event.clientX, event.clientY); }
+                tap.time = 0;
+            } else {
+                tap.time = now;
+                tap.x = event.clientX;
+                tap.y = event.clientY;
+            }
+        }
+    }
+
+    stage.addEventListener('pointerup', end);
+    stage.addEventListener('pointercancel', end);
+
+    stage.addEventListener('wheel', function (event) {
+        event.preventDefault();
+        setScale(scale * (event.deltaY < 0 ? 1.15 : 1 / 1.15), event.clientX, event.clientY);
+    }, { passive: false });
+
+    window.addEventListener('resize', apply);
+})();
+
+// Category pills (phones): the row scrolls sideways, so start with the active category in view
+// (e.g. "Others" would otherwise sit off screen). Only the row itself scrolls, never the page.
+(function () {
+    var row = document.querySelector('.catalog__head .pills');
+    var active = row && row.querySelector('.pill.is-active');
+    if (!active || row.scrollWidth <= row.clientWidth) { return; }
+    row.scrollLeft = Math.max(0, active.offsetLeft - (row.clientWidth - active.offsetWidth) / 2);
 })();
