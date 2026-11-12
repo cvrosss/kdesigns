@@ -1,0 +1,16 @@
+{# Full-screen photo viewer. Pinch, double-tap or use the buttons to zoom; drag to move around. Driven by storefront.js. #}
+<dialog class="zoom" data-zoom-dialog aria-label="Photo viewer">
+    <p class="zoom__title" data-zoom-caption></p>
+    <button type="button" class="zoom__btn zoom__close" data-zoom-close aria-label="Close photo">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div class="zoom__stage" data-zoom-stage>
+        <img class="zoom__img" data-zoom-img alt="" draggable="false">
+    </div>
+    <p class="zoom__hint">Pinch or double-tap to zoom</p>
+    <div class="zoom__bar">
+        <button type="button" class="zoom__btn" data-zoom-out aria-label="Zoom out">&minus;</button>
+        <button type="button" class="zoom__btn zoom__btn--text" data-zoom-reset aria-label="Reset zoom">Reset</button>
+        <button type="button" class="zoom__btn" data-zoom-in aria-label="Zoom in">+</button>
+    </div>
+</dialog>

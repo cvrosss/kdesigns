@@ -20,7 +20,10 @@
                     {% if product.badge %}
                         <span class="badge badge--{{ product.badge|lower }}">{{ product.badge }}</span>
                     {% endif %}
-                    <img src="/{{ product.image }}" alt="{{ product.name }}" loading="lazy" onerror="this.hidden=true">
+                    {# Tapping the photo opens it full screen, where it can be pinched or double-tapped to zoom. #}
+                    <button type="button" class="product-card__zoom" data-zoom data-zoom-src="/{{ product.image }}" data-zoom-title="{{ product.name }}" aria-label="View a larger photo of {{ product.name }}">
+                        <img src="/{{ product.image }}" alt="{{ product.name }}" loading="lazy" onerror="this.hidden=true">
+                    </button>
                 </div>
                 <div class="product-card__body">
                     <p class="product-card__category">{{ product.category }}</p>
