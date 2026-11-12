@@ -5,8 +5,13 @@
                 <div class="footer__logo">{{ studio.name|upper }}</div>
                 <p>{{ studio.description }}</p>
                 <div class="footer__social">
+                    {# A placeholder '#' is shown as text: a link that goes nowhere is worse than none. #}
                     {% for link in studio.social %}
-                        <a href="{{ link.url }}">{{ link.label }}</a>
+                        {% if link.url != '#' %}
+                            <a href="{{ link.url }}" rel="noopener" target="_blank">{{ link.label }}</a>
+                        {% else %}
+                            <span class="footer__social-pending">{{ link.label }}</span>
+                        {% endif %}
                     {% endfor %}
                 </div>
             </div>

@@ -2,19 +2,38 @@
 
 namespace App\Twig;
 
+use App\Service\OrderSchedule;
 use Twig\Extension\AbstractExtension;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Twig\Extension\GlobalsInterface;
+use Twig\TwigFunction;
 
 /**
  * Site-wide storefront data used by the navbar, hero and footer.
  */
 final class StorefrontExtension extends AbstractExtension implements GlobalsInterface
 {
+    public function __construct(
+        #[Autowire('%kernel.project_dir%')] private readonly string $projectDir,
+    ) {
+    }
+
+    /**
+     * asset_v('/css/admin.css') returns the path with ?v=<file modified time>, so browsers reload it after every change.
+     */
+    public function getFunctions(): array
+    {
+        return [new TwigFunction('asset_v', function (string $path): string {
+            $file = $this->projectDir.'/public'.$path;
+
+            return $path.(is_file($file) ? '?v='.filemtime($file) : '');
+        })];
+    }
+
     public function getGlobals(): array
     {
         return [
-            // Replace with the real cart count once a cart exists.
-            'cart_count' => 0,
+            'order_schedule' => ['timezone' => OrderSchedule::TIMEZONE, 'cutoff' => OrderSchedule::SAME_DAY_CUTOFF],
             'story' => [
                 'years' => 3,
                 'paragraphs' => [
@@ -37,17 +56,19 @@ final class StorefrontExtension extends AbstractExtension implements GlobalsInte
                     'We are open 10am to 6pm Monday to Saturday.',
                     'We only accept pre order on Sundays.',
                 ],
+                // A '#' url renders in the footer as plain text instead of a dead link.
                 'social' => [
-                    ['label' => 'Instagram', 'url' => '#'],
-                    ['label' => 'Facebook', 'url' => '#'],
-                    ['label' => 'TikTok', 'url' => '#'],
+                    ['label' => 'Instagram', 'url' => 'https://www.instagram.com/kdesignsbloomsandstyle'],
+                    ['label' => 'Facebook', 'url' => 'https://www.facebook.com/profile.php?id=100090915814063'],
+                    ['label' => 'TikTok', 'url' => 'https://www.tiktok.com/@kdesignsbloomsandstyle'],
                 ],
+                // Every entry must lead somewhere different: three labels pointing at the same
+                // About page read as three sections that do not exist.
                 'studio_links' => [
                     ['label' => 'About Us', 'route' => 'app_about', 'fragment' => null],
-                    ['label' => 'Our Process', 'route' => 'app_about', 'fragment' => null],
-                    ['label' => 'Sustainability', 'route' => 'app_about', 'fragment' => null],
+                    ['label' => 'Browse the Catalog', 'route' => 'app_catalog', 'fragment' => null],
                 ],
-                'services' => ['Fresh and Dried Bouquets', 'Korean Baskets', 'Bloom Box'],
+                'services' => ['Fresh and Dried Bouquets', 'Korean Baskets', 'Basket Bouquet'],
                 'contact' => [
                     'email' => 'kdesigns@gmail.com',
                     'phone' => '+63 905 648 7476',

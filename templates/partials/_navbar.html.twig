@@ -4,24 +4,45 @@
             <img src="/images/logo.png" alt="{{ studio.name|upper }} Blooms and style" class="navbar__logo" width="384" height="151">
         </a>
 
-        <nav class="navbar__links" aria-label="Primary">
-            <a href="{{ path('app_home') }}">Home</a>
-            <a href="{{ path('app_about') }}">About</a>
-            <a href="{{ path('app_catalog') }}">Catalog</a>
-        </nav>
+        {# On desktop this is a plain row; below 960px it becomes the dropdown opened by the hamburger. #}
+        <div class="navbar__menu" id="site-menu" data-nav-menu>
+            <nav class="navbar__links" aria-label="Primary">
+                <a href="{{ path('app_home') }}">Home</a>
+                <a href="{{ path('app_about') }}">About</a>
+                <a href="{{ path('app_catalog') }}">Catalog</a>
+            </nav>
 
-        <div class="navbar__actions">
-            {% if app.user %}
-                <span class="navbar__user">Hi, {{ app.user.name|split(' ')|first }}</span>
-                <a href="{{ path('app_my_orders') }}" class="btn btn--outline btn--sm">My Orders</a>
-                <a href="{{ logout_path() }}" class="btn btn--outline btn--sm">Log Out</a>
-            {% else %}
-                <button type="button" class="btn btn--outline btn--sm" data-auth-open="login">Log In</button>
-            {% endif %}
-            <a href="#" class="btn btn--primary btn--sm" data-cart-link aria-label="Cart, 0 items">
+            <div class="navbar__account">
+                {% if app.user %}
+                    <span class="navbar__user">Hi, {{ app.user.name|split(' ')|first }}</span>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_overview') }}" class="btn btn--outline btn--sm">Dashboard</a>
+                    {% elseif is_granted('ROLE_STAFF') %}
+                        <a href="{{ path('app_manage_products') }}" class="btn btn--outline btn--sm">Staff Panel</a>
+                    {% endif %}
+                    <a href="{{ path('app_my_orders') }}" class="btn btn--outline btn--sm">Account</a>
+                    <a href="{{ logout_path() }}" class="btn btn--outline btn--sm">Log Out</a>
+                {% else %}
+                    <button type="button" class="btn btn--outline btn--sm" data-auth-open="login">Log In</button>
+                {% endif %}
+            </div>
+            {# On phones the cart lives in the hamburger menu to keep the bar uncluttered. #}
+            <button type="button" class="btn btn--primary navbar__cart navbar__cart--menu" data-cart-link aria-label="Cart, 0 items">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
                 Cart<span data-cart-count></span>
-            </a>
+            </button>
+        </div>
+
+        <div class="navbar__actions">
+            {# Opens the cart dialog via JS; a button, not an <a href="#">, so assistive
+               technology announces a control rather than a link that goes nowhere. #}
+            <button type="button" class="btn btn--primary btn--sm navbar__cart navbar__cart--bar" data-cart-link aria-label="Cart, 0 items">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+                Cart<span data-cart-count></span>
+            </button>
+            <button type="button" class="navbar__toggle" data-nav-toggle aria-controls="site-menu" aria-expanded="false" aria-label="Open menu">
+                <span class="navbar__bars" aria-hidden="true"><span></span><span></span><span></span></span>
+            </button>
         </div>
     </div>
 </header>
