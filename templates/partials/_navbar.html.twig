@@ -15,12 +15,12 @@
             <div class="navbar__account">
                 {% if app.user %}
                     <span class="navbar__user">Hi, {{ app.user.name|split(' ')|first }}</span>
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <a href="{{ path('app_overview') }}" class="btn btn--outline btn--sm">Dashboard</a>
-                    {% elseif is_granted('ROLE_STAFF') %}
-                        <a href="{{ path('app_manage_products') }}" class="btn btn--outline btn--sm">Staff Panel</a>
+                    {# Staff and admins reach their panel (and "My Account") from the floating panel button
+                       at the bottom right of every page, so the bar keeps only Log Out for them.
+                       Customers get the Account button, which opens their order history. #}
+                    {% if not is_granted('ROLE_STAFF') %}
+                        <a href="{{ path('app_my_orders') }}" class="btn btn--outline btn--sm">Account</a>
                     {% endif %}
-                    <a href="{{ path('app_my_orders') }}" class="btn btn--outline btn--sm">Account</a>
                     <a href="{{ logout_path() }}" class="btn btn--outline btn--sm">Log Out</a>
                 {% else %}
                     <button type="button" class="btn btn--outline btn--sm" data-auth-open="login">Log In</button>

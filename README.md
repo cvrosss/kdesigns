@@ -19,14 +19,14 @@ Built with Symfony 7.4, Doctrine ORM, Twig and vanilla JavaScript.
 | Role | Can do |
 |---|---|
 | Customer (`ROLE_USER`) | Browse, order, view own orders, view profile and change password (`/account`) |
-| Staff (`ROLE_STAFF`) | Everything a customer can, plus view all products, add products, **edit/delete only the products they created** (`/manage/products`), and manage categories (`/category`) |
-| Admin (`ROLE_ADMIN`) | Everything staff can, plus the dashboard, orders, inventory, buyers, feedback, and **user management** (`/admin/users`: create, edit, reset password, change role, disable, delete) and edit/delete any product |
+| Staff (`ROLE_STAFF`) | Everything a customer can, plus view all products, add products, **edit/delete only the products they created** (`/manage/products`), manage categories (`/category`), and run day-to-day **orders** (`/admin/orders`: view all orders, update status) and **inventory** (`/admin/inventory`: restock, add products) |
+| Admin (`ROLE_ADMIN`) | Everything staff can, plus the dashboard, buyers, feedback, and **user management** (`/admin/users`: create, edit, reset password, change role, disable, delete) and edit/delete any product |
 
 Access is enforced three ways: `access_control` and `role_hierarchy` in `config/packages/security.yaml`, `#[IsGranted]` on controllers (plus `ProductVoter` for product ownership), and `is_granted()` in Twig menus. A signed-in user without permission sees a 403 page; anonymous visitors are redirected to `/login`. Disabled accounts cannot log in and are signed out on their next request.
 
 Create a staff account with the seed command: `php bin/console app:seed --staff-email=staff@example.com --staff-password=choose-a-password`. Run `php bin/console doctrine:migrations:migrate` to add the new `user.active` and `product.created_by_id` columns.
 
-**Admin dashboard** (`/admin`, `ROLE_ADMIN` only)
+**Admin dashboard** (`/admin`, `ROLE_ADMIN` only, except Orders and Inventory, which staff can also open)
 - Overview with key figures, including total users, total staff and total records
 - Orders list with status updates
 - Inventory: add products with image upload and adjust stock

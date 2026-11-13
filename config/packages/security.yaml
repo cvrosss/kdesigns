@@ -48,6 +48,8 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
+        # Staff run day-to-day orders and stock; everything else under /admin (dashboard, users, buyers, feedback) is admin-only.
+        - { path: '^/admin/(orders|inventory)', roles: ROLE_STAFF }
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/category, roles: ROLE_STAFF }
         - { path: ^/manage, roles: ROLE_STAFF }

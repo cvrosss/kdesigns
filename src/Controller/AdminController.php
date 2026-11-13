@@ -24,10 +24,11 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Admin dashboard. Access is restricted to ROLE_ADMIN here and by access_control in security.yaml.
+ * Back-office pages. Orders and inventory are open to staff and admins; the dashboard, buyers
+ * history and feedback moderation are admin-only. Each action declares its own role below, and
+ * security.yaml's access_control repeats the split so the URL is protected even if an attribute is lost.
  */
 #[Route('/admin')]
-#[IsGranted('ROLE_ADMIN')]
 final class AdminController extends AbstractController
 {
     /**
@@ -48,6 +49,7 @@ final class AdminController extends AbstractController
     }
 
     #[Route('', name: 'app_overview', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function overview(): Response
     {
         $counts = $this->orders->countByStatus();
@@ -77,6 +79,7 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/orders', name: 'app_orders', methods: ['GET'])]
+    #[IsGranted('ROLE_STAFF')]
     public function orders(Request $request): Response
     {
         $counts = $this->orders->countByStatus();
@@ -98,6 +101,7 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/orders/{reference}/status', name: 'app_order_status', methods: ['POST'])]
+    #[IsGranted('ROLE_STAFF')]
     public function updateStatus(string $reference, Request $request): RedirectResponse
     {
         $order = $this->orders->findOneBy(['reference' => $reference]);
@@ -122,12 +126,14 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/inventory', name: 'app_inventory', methods: ['GET'])]
+    #[IsGranted('ROLE_STAFF')]
     public function inventory(Request $request): Response
     {
         return $this->renderInventory($request, $this->createForm(ProductType::class, new Product()));
     }
 
     #[Route('/inventory/new', name: 'app_inventory_new', methods: ['POST'])]
+    #[IsGranted('ROLE_STAFF')]
     public function createProduct(Request $request, EntityManagerInterface $em, ProductImageUploader $uploader): Response
     {
         $product = new Product();
@@ -184,6 +190,7 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/inventory/{id}/stock', name: 'app_inventory_stock', methods: ['POST'])]
+    #[IsGranted('ROLE_STAFF')]
     public function setStock(Product $product, Request $request): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('stock_'.$product->getId(), $request->request->getString('_token'))) {
@@ -216,6 +223,7 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/buyers', name: 'app_buyers_history', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function buyersHistory(): Response
     {
         $buyers = $this->orders->buyersSummary();
@@ -234,12 +242,14 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/feedback', name: 'app_admin_feedback', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function feedback(FeedbackRepository $feedback): Response
     {
         return $this->render('admin/feedback.html.twig', ['reviews' => $feedback->findAllNewestFirst()]);
     }
 
     #[Route('/feedback/{id}', name: 'app_admin_feedback_update', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function updateFeedback(Feedback $review, Request $request, EntityManagerInterface $em): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('feedback_'.$review->getId(), $request->request->getString('_token'))) {

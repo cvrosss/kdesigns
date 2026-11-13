@@ -39,16 +39,29 @@ final class AccessControlTest extends ShopWebTestCase
         }
     }
 
-    public function testStaffCanReachStaffPagesButNotTheAdminDashboard(): void
+    /** Staff run orders and stock day to day; the dashboard, users, buyers and feedback stay admin-only. */
+    public function testStaffCanReachOrdersAndInventoryButNotTheAdminOnlyPages(): void
     {
         $this->login($this->makeUser('staff@example.test', User::ROLE_STAFF));
 
         $this->makeCategory();
-        $this->assertGetStatus(200, '/manage/products');
-        $this->assertGetStatus(200, '/category');
+        foreach (['/manage/products', '/category', '/admin/orders', '/admin/inventory'] as $path) {
+            $this->assertGetStatus(200, $path);
+        }
 
-        foreach (['/admin', '/admin/users', '/admin/orders', '/admin/inventory'] as $path) {
+        foreach (['/admin', '/admin/users', '/admin/buyers', '/admin/feedback'] as $path) {
             $this->assertGetStatus(403, $path);
+        }
+    }
+
+    /** The order-status and restock actions are POSTs: a customer must be refused outright. */
+    public function testCustomerCannotUseTheOrderAndStockActions(): void
+    {
+        $this->login($this->makeUser('customer@example.test'));
+
+        foreach (['/admin/orders/KDB-200001/status', '/admin/inventory/1/stock', '/admin/inventory/new'] as $path) {
+            $this->client->request('POST', $path);
+            self::assertResponseStatusCodeSame(403, $path.' must be refused to a customer');
         }
     }
 

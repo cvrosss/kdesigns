@@ -1,8 +1,8 @@
 {# Menu items are filtered by role: staff only see their own tools, admins see everything. #}
 {% set nav = [
     {key: 'overview', label: 'Overview', icon: '◈', route: 'app_overview', role: 'ROLE_ADMIN'},
-    {key: 'orders', label: 'Orders', icon: '🧾', route: 'app_orders', role: 'ROLE_ADMIN'},
-    {key: 'inventory', label: 'Inventory', icon: '📦', route: 'app_inventory', role: 'ROLE_ADMIN'},
+    {key: 'orders', label: 'Orders', icon: '🧾', route: 'app_orders', role: 'ROLE_STAFF'},
+    {key: 'inventory', label: 'Inventory', icon: '📦', route: 'app_inventory', role: 'ROLE_STAFF'},
     {key: 'products', label: 'Products', icon: '🌸', route: 'app_manage_products', role: 'ROLE_STAFF'},
     {key: 'categories', label: 'Categories', icon: '🏷️', route: 'app_category_index', role: 'ROLE_STAFF'},
     {key: 'users', label: 'Users', icon: '🔑', route: 'app_user_index', role: 'ROLE_ADMIN'},
